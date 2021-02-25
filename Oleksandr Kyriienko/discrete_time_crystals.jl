@@ -7,7 +7,7 @@ RXstr(N::Int) = chain(N, prod([put(N, i=>Rx(0.3)) for i=1:N]))
 #== or ==#
 XstrR(N::Int) = chain(N, repeat(X, 1:N))
 Hzz(N::Int) = sum([-1 * put(N, i+1 => Z) * put(N, i => Z) for i = 1:N-1])
-Uzz(N::Int, Jt::Float64) = time_evolve(H_ZZ(N), Jt, tol=1e-5, check_hermicity=true)
+Uzz(N::Int, Jt::Float64) = time_evolve(Hzz(N), Jt, tol=1e-5, check_hermicity=true) # It was H_ZZ but changed to Hzz as it wasn't defined but H_zz is
 Mz(N::Int) = sum([put(N, i => Z) for i = 1:N]) / N
 
 function Mz_evolve(N::Int, nsteps::Int64, Jt)
