@@ -39,31 +39,32 @@ function save_plot(name, q, step, plot, label)
     strlabel = string(label);
     mkpath(string(dir,"\\Graphs\\","\\",name,"_",q, " qubits\\","\\",step," steps"))
     pngfilename = string(dir,"\\Graphs\\","\\",name,"_",q, " qubits\\","\\",step," steps\\",strlabel,".png")
-    #pdffilename = string(dir,"\\plots\\",name,"_",strlabel,".pdf")
-    #epsfilename = string(dir,"\\plots\\",name,"_",strlabel,".eps")
+    #pdffilename = string(dir,"\\Graphs\\","\\",name,"_",q, " qubits\\","\\",step," steps\\",strlabel,".pdf")
+    #epsfilename = string(dir,"\\Graphs\\","\\",name,"_",q, " qubits\\","\\",step," steps\\",strlabel,".eps")
     savefig(plot, pngfilename)
     #savefig(plot, pdffilename)
     #savefig(plot, epsfilename)
 end
 
 for q = 2:5 # Number of qubits for each
-    for step = 20:20:80
+    for step = 10:5:15
         figpath1 = "C:/Users/Daniel/OneDrive/Documents/Exeter Uni/Modules/Year 3/Project-Time crystals/Julia Code/Graphs/DTC " * string(q)* " qubits/" * string(step) * " steps/"
         # 1 after variable names denote they're local variables in the for loop
         # And here is where the file path is defined for each iteration.
-        for i = 0:50
+        for i = 0:20
             title1 = "DTC plot for "* string(q) * " Qubits for " * string(step)* " cycles for Jt = " * string(i/10)
             t_vec1, Mz_vec1 = Mz_evolve(q, step, i/10)
-            Plots.plot(t_vec1, Mz_vec1, linetype=:steppre, xlabel = "Time/ period of driving field", xlims = (0, step), ylabel = " \n"*"Magnetisation / fraction of maximum value\n and orientation", legend = false)
+            plt=Plots.plot(t_vec1, Mz_vec1, linetype=:steppre, xlabel = "Time/ period of driving field", xlims = (0, step), ylabel = " \n"*"Magnetisation / fraction of maximum value\n and orientation", legend = false)
             Plots.title!(title1)
-            Plots.savefig(figpath1*title1*".png") #Saves the plots onto my computer but requires me to make a folder
+            #Plots.savefig(figpath1*title1*".png") #Saves the plots onto my computer but requires me to make a folder
 
             label=title1;
             plot_name = @Name DTC
             save_plot(plot_name, q, step, plt, label) # Saves the plots to github
         end
+        println("Successfully finished "*string(step)*" steps\n")
     end
-
+    println("Successfully finished "*string(q)*" qubits\n")
 end
 
 # I have no idea what the relevance of this last bit is...
@@ -72,3 +73,5 @@ using YaoExtensions
 c = variational_circuit(6, 6)
 
 gatecount(c)
+
+println("Successfully finished")
