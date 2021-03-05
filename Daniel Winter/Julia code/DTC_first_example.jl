@@ -37,8 +37,8 @@ function save_plot(name, q, step, plot, label)
     dir = pwd();
     println("Saving plots to the directory in $dir","\\Graphs")
     strlabel = string(label);
-    mkpath(string(dir,"\\Graphs\\","\\",name,"_",q, " qubits\\","\\",step," steps"))
-    pngfilename = string(dir,"\\Graphs\\","\\",name,"_",q, " qubits\\","\\",step," steps\\",strlabel,".png")
+    mkpath(string(dir,"\\Graphs\\","\\",name,"\\","\\",name,"_",q, " qubits\\","\\",step," steps"))
+    pngfilename = string(dir,"\\Graphs\\","\\",name,"\\","\\",name,"_",q, " qubits\\","\\",step," steps\\",strlabel,".png")
     #pdffilename = string(dir,"\\Graphs\\","\\",name,"_",q, " qubits\\","\\",step," steps\\",strlabel,".pdf")
     #epsfilename = string(dir,"\\Graphs\\","\\",name,"_",q, " qubits\\","\\",step," steps\\",strlabel,".eps")
     savefig(plot, pngfilename)
@@ -46,8 +46,10 @@ function save_plot(name, q, step, plot, label)
     #savefig(plot, epsfilename)
 end
 
-for q = 15 # Number of qubits for each
-    for step = 10:5:15
+plot_name = @Name DTC
+
+for q = 10:12 # Number of qubits for each
+    for step = 10:5:30
         figpath1 = "C:/Users/Daniel/OneDrive/Documents/Exeter Uni/Modules/Year 3/Project-Time crystals/Julia Code/Graphs/DTC " * string(q)* " qubits/" * string(step) * " steps/"
         # 1 after variable names denote they're local variables in the for loop
         # And here is where the file path is defined for each iteration.
@@ -59,7 +61,6 @@ for q = 15 # Number of qubits for each
             #Plots.savefig(figpath1*title1*".png") #Saves the plots onto my computer but requires me to make a folder
 
             label=title1;
-            plot_name = @Name DTC
             save_plot(plot_name, q, step, plt, label) # Saves the plots to github
         end
         println("Successfully finished "*string(step)*" steps\n")

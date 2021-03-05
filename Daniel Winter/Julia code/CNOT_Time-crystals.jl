@@ -41,8 +41,8 @@ function save_plot(name, q, step, plot, label)
     dir = pwd();
     println("Saving plots to the directory in $dir","\\Graphs")
     strlabel = string(label);
-    mkpath(string(dir,"\\Graphs\\","\\",name,"_",q, " qubits\\","\\",step," steps"))
-    pngfilename = string(dir,"\\Graphs\\","\\",name,"_",q, " qubits\\","\\",step," steps\\",strlabel,".png")
+    mkpath(string(dir,"\\Graphs\\","\\",name,"\\","\\",name,"_",q, " qubits\\","\\",step," steps"))
+    pngfilename = string(dir,"\\Graphs\\","\\",name,"\\","\\",name,"_",q, " qubits\\","\\",step," steps\\",strlabel,".png")
     #pdffilename = string(dir,"\\Graphs\\","\\",name,"_",q, " qubits\\","\\",step," steps\\",strlabel,".pdf")
     #epsfilename = string(dir,"\\Graphs\\","\\",name,"_",q, " qubits\\","\\",step," steps\\",strlabel,".eps")
     savefig(plot, pngfilename)
@@ -52,8 +52,8 @@ end
 
 plot_name = @Name CNOT_TC
 
-for q = 2:2:6 # Number of qubits for each
-    for step = 10:5:15
+for q = 2:2:4 # Number of qubits for each
+    for step = 20:10:100
         figpath1 = "C:/Users/Daniel/OneDrive/Documents/Exeter Uni/Modules/Year 3/Project-Time crystals/Julia Code/Graphs/" *plot_name* " " *string(q)* " qubits/" * string(step) * " steps/"
         # 1 after variable names denote they're local variables in the for loop
         # And here is where the file path is defined for each iteration.
@@ -67,6 +67,7 @@ for q = 2:2:6 # Number of qubits for each
             label=title1;
 
             save_plot(plot_name, q, step, plt, label) # Saves the plots to github
+            display(plt)
         end
         println("Successfully finished "*string(step)*" steps\n")
     end
