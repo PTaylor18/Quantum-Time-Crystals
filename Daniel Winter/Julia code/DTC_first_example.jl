@@ -46,7 +46,7 @@ function save_plot(name, q, step, plot, label)
     #savefig(plot, epsfilename)
 end
 
-for q = 2:5 # Number of qubits for each
+for q = 15 # Number of qubits for each
     for step = 10:5:15
         figpath1 = "C:/Users/Daniel/OneDrive/Documents/Exeter Uni/Modules/Year 3/Project-Time crystals/Julia Code/Graphs/DTC " * string(q)* " qubits/" * string(step) * " steps/"
         # 1 after variable names denote they're local variables in the for loop
