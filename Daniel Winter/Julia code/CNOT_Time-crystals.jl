@@ -50,9 +50,11 @@ function save_plot(name, q, step, plot, label)
     #savefig(plot, epsfilename)
 end
 
-for q = 2:5 # Number of qubits for each
+plot_name = @Name CNOT_TC
+
+for q = 2:2:6 # Number of qubits for each
     for step = 10:5:15
-        figpath1 = "C:/Users/Daniel/OneDrive/Documents/Exeter Uni/Modules/Year 3/Project-Time crystals/Julia Code/Graphs/DTC " * string(q)* " qubits/" * string(step) * " steps/"
+        figpath1 = "C:/Users/Daniel/OneDrive/Documents/Exeter Uni/Modules/Year 3/Project-Time crystals/Julia Code/Graphs/" *plot_name* string(q)* " qubits/" * string(step) * " steps/"
         # 1 after variable names denote they're local variables in the for loop
         # And here is where the file path is defined for each iteration.
         for i = 0:20
@@ -63,7 +65,7 @@ for q = 2:5 # Number of qubits for each
             #Plots.savefig(figpath1*title1*".png") #Saves the plots onto my computer but requires me to make a folder
 
             label=title1;
-            plot_name = @Name CNOT_TC
+
             save_plot(plot_name, q, step, plt, label) # Saves the plots to github
         end
         println("Successfully finished "*string(step)*" steps\n")
