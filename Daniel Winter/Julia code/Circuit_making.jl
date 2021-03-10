@@ -1,34 +1,39 @@
-using Yao
-using Random
-using Plots
+using ZXCalculus, YaoExtensions, YaoPlots
+using Compose
 
-Xstr(N::Int) = chain(N, repeat(X, 1:N))
-Ystr(N::Int) = chain(N, repeat(Y, 1:N))
-Zstr(N::Int) = chain(N, repeat(Z, 1:N))
-CNOTodd(N::Int) = chain(N, prod([chain(N, cnot(i,i+1)) for i=1:2:N]))
-CNOTeven(N::Int) = chain(N, prod([chain(N, cnot(i,(i+1)%N)) for i=2:2:N]))
-Mzodd(N::Int) = sum([put(N, i => Z) for i = 1:2:N]) / (N/2)
-Mzeven(N::Int) = sum([put(N, i => Z) for i = 2:2:N]) / (N/2)
-Xstrodd(N::Int) = chain(N, repeat(X, 1:2:N))
+# show a qft circuit
+plot(qft_circuit(5))
 
-RXstr(N::Int) = chain(N, prod([put(N, i=>Rx(0.1)) for i=1:N]))
-#Hzz(N::Int) = sum([-1 * put(N, i+1 => Z) * put(N, i => Z) for i = 1:N-1])
-#Uzz(N::Int, Jt::Float64) = time_evolve(H_ZZ(N), Jt, tol=1e-5, check_hermicity=true)
+function generate_example()
+    zxd = ZXDiagram(4)
+    push_gate!(zxd, Val{:Z}(), 1, 3//2)
+    push_gate!(zxd, Val{:H}(), 1)
+    push_gate!(zxd, Val{:Z}(), 1, 1//2)
+    push_gate!(zxd, Val{:H}(), 4)
+    push_gate!(zxd, Val{:CZ}(), 4, 1)
+    push_gate!(zxd, Val{:CNOT}(), 1, 4)
+    push_gate!(zxd, Val{:H}(), 1)
+    push_gate!(zxd, Val{:H}(), 4)
+    push_gate!(zxd, Val{:Z}(), 1, 1//4)
+    push_gate!(zxd, Val{:Z}(), 4, 3//2)
+    push_gate!(zxd, Val{:X}(), 4, 1//1)
+    push_gate!(zxd, Val{:H}(), 1)
+    push_gate!(zxd, Val{:Z}(), 4, 1//2)
+    push_gate!(zxd, Val{:X}(), 4, 1//1)
+    push_gate!(zxd, Val{:Z}(), 2, 1//2)
+    push_gate!(zxd, Val{:CNOT}(), 3, 2)
+    push_gate!(zxd, Val{:H}(), 2)
+    push_gate!(zxd, Val{:CNOT}(), 3, 2)
+    push_gate!(zxd, Val{:Z}(), 2, 1//4)
+    push_gate!(zxd, Val{:Z}(), 3, 1//2)
+    push_gate!(zxd, Val{:H}(), 2)
+    push_gate!(zxd, Val{:H}(), 3)
+    push_gate!(zxd, Val{:Z}(), 3, 1//2)
+    push_gate!(zxd, Val{:CNOT}(), 3, 2)
 
-
-function CNOTcirc(N::Int, nsteps::Int64, Jt)
-    protected = true
-    ψ = zero_state(N) |> Xstrodd(N)
-    for i = 0:nsteps
-        if protected
-            ψ |> CNOTodd(N) |> CNOTeven(N) |> RXstr(N)
-        else
-            ψ |> CNOTodd(N) |> CNOTeven(N)  |> RXstr(N)
-        end
-        append!(ψ)
-    end
-    return ψ
+    return zxd
 end
 
-CNOTcirc(4,20,1)
-display(ψ) # you can set a scale parameter
+zxd = generate_example() # define a example
+plot(zxd) # draw a ZX-diagram
+plot(ZXGraph(zxd)) # draw a graph-like ZX-diagram

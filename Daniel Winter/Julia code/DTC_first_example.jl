@@ -11,8 +11,9 @@ Hzz(N::Int) = sum([-1 * put(N, i+1 => Z) * put(N, i => Z) for i = 1:N-1])
 Uzz(N::Int, Jt::Float64) = time_evolve(Hzz(N), Jt, tol=1e-5, check_hermicity=true)
 Mz(N::Int) = sum([put(N, i => Z) for i = 1:N]) / N
 
+protected = false # Can change this to run the alternative XstrR and Rxstr
+
 function Mz_evolve(N::Int, nsteps::Int64, Jt)
-    protected = true # Can change this to run the alternative XstrR and Rxstr
     t_vec = Vector{Float64}();
     Mz_vec = Vector{Float64}();
     ψ = zero_state(N)
@@ -37,8 +38,8 @@ function save_plot(name, q, step, plot, label)
     dir = pwd();
     println("Saving plots to the directory in $dir","\\Graphs")
     strlabel = string(label);
-    mkpath(string(dir,"\\Graphs\\","\\",name,"\\","\\",name,"_",q, " qubits\\","\\",step," steps"))
-    pngfilename = string(dir,"\\Graphs\\","\\",name,"\\","\\",name,"_",q, " qubits\\","\\",step," steps\\",strlabel,".png")
+    mkpath(string(dir,"\\Graphs\\","\\",name,"\\","\\",name,"_",q, " qubits\\","\\Protected ",protected,"\\","\\",step," steps"))
+    pngfilename = string(dir,"\\Graphs\\","\\",name,"\\","\\",name,"_",q, " qubits\\","\\Protected ",protected,"\\","\\",step," steps\\",strlabel,".png")
     #pdffilename = string(dir,"\\Graphs\\","\\",name,"_",q, " qubits\\","\\",step," steps\\",strlabel,".pdf")
     #epsfilename = string(dir,"\\Graphs\\","\\",name,"_",q, " qubits\\","\\",step," steps\\",strlabel,".eps")
     savefig(plot, pngfilename)
@@ -48,8 +49,8 @@ end
 
 plot_name = @Name DTC
 
-for q = 10:12 # Number of qubits for each
-    for step = 10:5:30
+for q = 5 # Number of qubits for each
+    for step = 30:10:100
         figpath1 = "C:/Users/Daniel/OneDrive/Documents/Exeter Uni/Modules/Year 3/Project-Time crystals/Julia Code/Graphs/DTC " * string(q)* " qubits/" * string(step) * " steps/"
         # 1 after variable names denote they're local variables in the for loop
         # And here is where the file path is defined for each iteration.
