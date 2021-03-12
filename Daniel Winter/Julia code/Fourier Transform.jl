@@ -63,13 +63,16 @@ for q = 5 # Number of qubits for each
             #Plots.savefig(figpath1*title1*".png") #Saves the plots onto my computer but requires me to make a folder
             label=title1;
 
-            tit1 = "Fourier transfrom of DTC plot for "* string(q) * " Qubits for " * string(step)* " cycles for Jt = " * string(i/10)
-            Mz_vec_fft1 = fft(Mz_vec1)
-            fourier=plot(abs.(Mz_vec_fft1), linetype=:steppre, xlabel = "Time/ period of driving field", xlims = (0, step), ylabel = " \n"*"Magnetisation / fraction of maximum value\n and orientation", legend = false)
-            display(fourier)
-
             save_plot(plot_name, q, step, plt, label) # Saves the plots to github
-            save_plot(plot_name, q, step, fourier, label) # Saves the plots to github
+
+            tit1 = "Fourier transfrom of DTC plot for "* string(q) * " Qubits for " * string(step)* " cycles \n"*" for Jt = " * string(i/10)
+            Mz_vec_fft1 = fft(Mz_vec1)
+            fourier=Plots.plot(abs.(Mz_vec_fft1), linetype=:steppre, xlims = (0, step), legend = false)
+            Plots.title!(tit1)
+            display(fourier)
+            lab="Fourier transfrom of DTC plot for "* string(q) * " Qubits for " * string(step)* " cycles for Jt = " * string(i/10);
+
+            save_plot(plot_name, q, step, fourier, lab) # Saves the plots to github
 
         end
         println("Successfully finished "*string(step)*" steps\n")
