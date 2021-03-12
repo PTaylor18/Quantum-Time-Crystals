@@ -52,12 +52,12 @@ end
 
 plot_name = @Name CNOT_TC
 
-for q = 2:2:4 # Number of qubits for each
-    for step = 20:10:100
+for q = 2:2:6 # Number of qubits for each
+    for step = 100:100:1000
         figpath1 = "C:/Users/Daniel/OneDrive/Documents/Exeter Uni/Modules/Year 3/Project-Time crystals/Julia Code/Graphs/" *plot_name* " " *string(q)* " qubits/" * string(step) * " steps/"
         # 1 after variable names denote they're local variables in the for loop
         # And here is where the file path is defined for each iteration.
-        for i = 0:20
+        for i = 3
             title1 = "" *string(plot_name)* " plot for "* string(q) * " Qubits for " * string(step)* " cycles for Jt = " * string(i/10)
             t_vec1, Mz_vec1 = Mz_evolve(q, step, i/10)
             plt=Plots.plot(t_vec1, Mz_vec1, linetype=:steppre, xlabel = "Time/ period of driving field", xlims = (0, step), ylabel = " \n"*"Magnetisation / fraction of maximum value\n and orientation", legend = false)
@@ -68,6 +68,15 @@ for q = 2:2:4 # Number of qubits for each
 
             save_plot(plot_name, q, step, plt, label) # Saves the plots to github
             display(plt)
+
+            tit1 = "Fourier transfrom of "*string(plot_name)* " plot for "* string(q) * " Qubits for " * string(step)* " cycles for Jt = " * string(i/10)
+            Mz_vec_fft1 = fft(Mz_vec1)
+            fourier=Plots.plot(abs.(Mz_vec_fft1), linetype=:steppre, xlabel="Frequecy", xlims = (0, step), ylabel="Intensity", legend = false)
+            Plots.title!(tit1)
+            display(fourier)
+            lab="Fourier transfrom of "*string(plot_name)* " plot for "* string(q) * " Qubits for " * string(step)* " cycles for Jt = " * string(i/10);
+
+            save_plot(plot_name, q, step, fourier, lab) # Saves the plots to github
         end
         println("Successfully finished "*string(step)*" steps\n")
     end
