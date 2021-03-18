@@ -1,6 +1,7 @@
 using Yao
 using Random
 using Plots
+using FFTW
 theme(:dao)
 
 Xstr(N::Int) = chain(N, prod([put(N, i=>X) for i=1:N]))
