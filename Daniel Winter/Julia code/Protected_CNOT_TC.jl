@@ -13,20 +13,18 @@ Mzodd(N::Int) = sum([put(N, i => Z) for i = 1:2:N]) / (N/2)
 Mzeven(N::Int) = sum([put(N, i => Z) for i = 2:2:N]) / (N/2)
 Xstrodd(N::Int) = chain(N, repeat(X, 1:2:N))
 
-#RXstr(N::Int) = chain(N, prod([put(N, i=>Rx(0.05)) for i=1:N]))
-#RXstr(N::Int) = chain(N, prod([put(N, i=>Rx(rand(Uniform(0.05,0.15)))) for i=1:N]))
-
-
-RXstr(N::Int) = chain(N, prod([put(N, i=>Rx(0.1)) for i=1:N]))
-RXstr(N::Int) = chain(N, prod([put(N, i=>Rx(rand(Uniform(0.1,0.3)))) for i=1:N]))
+RXstr(N::Int) = chain(N, prod([put(N, i=>Rx(0.05)) for i=1:N]))
+RXstr(N::Int) = chain(N, prod([put(N, i=>Rx(rand(Uniform(0.05,0.15)))) for i=1:N]))
 
 
 using Distributions
-RZstr(N::Int) = chain(N, prod([put(N, i=>Rz(rand(Uniform(0.5,2.5)))) for i=1:N]))
+#RZstr(N::Int) = chain(N, prod([put(N, i=>Rz(rand(Uniform(0.5,2.5)))) for i=1:N]))
 
 
-#Hz(N::Int) = rand(Uniform(0.5,2.5)) * sum([put(N, i => Z) for i = 1:N]) + 0.05 * sum([put(N, i => X) for i = 1:N])
-#RZstr(N::Int) = time_evolve(Hz(N), 1., tol=1e-5, check_hermicity=true)
+Hz(N::Int) = rand(Uniform(0.05,0.5)) * sum([put(N, i => Z) for i = 1:N]) + 0.05 * sum([put(N, i => X) for i = 1:N])
+RZstr(N::Int) = time_evolve(Hz(N), 1., tol=1e-5, check_hermicity=true)
+
+plot_name = @Name TimeEvo_CNOT_TC
 
 protected = true
 
@@ -64,17 +62,15 @@ function save_plot(name, q, step, plot, label)
     #savefig(plot, epsfilename)
 end
 
-plot_name = @Name PRO_CNOT_TC
-
-for q = 2:2:4 # Number of qubits for each
-    for step = 100:100:400
+for q = 10 # Number of qubits for each
+    for step = 10000
         figpath1 = "C:/Users/Daniel/OneDrive/Documents/Exeter Uni/Modules/Year 3/Project-Time crystals/Julia Code/Graphs/" *plot_name* " " *string(q)* " qubits/" * string(step) * " steps/"
         # 1 after variable names denote they're local variables in the for loop
         # And here is where the file path is defined for each iteration.
-        for i = 0:pi:20*pi
+        for i = 10*pi
             title1 = "" *string(plot_name)* " plot for "* string(q) * " Qubits Jt = " * string(i/10)
             t_vec1, Mz_vec1 = Mz_evolve(q, step, i/10)
-            plt=Plots.plot(t_vec1, Mz_vec1, linetype=:steppre, xlabel = "Time/ period of driving field", xlims = (0, step), ylabel = " \n"*"Magnetisation / fraction of maximum value\n and orientation", legend = false)
+            plt=Plots.plot(t_vec1[2000:10000], Mz_vec1[2000:10000], linetype=:steppre, xlabel = "Time/ period of driving field", xlims = (0, step), ylabel = " \n"*"Magnetisation / fraction of maximum value\n and orientation", legend = false)
             Plots.title!(title1)
             #Plots.savefig(figpath1*title1*".png") #Saves the plots onto my computer but requires me to make a folder
 
