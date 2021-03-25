@@ -28,14 +28,14 @@ macro Name(arg)
    string(arg)
 end
 
-plot_name = @Name TimeEvo_CNOT_TC
+plot_name = @Name TimeEvo_CNOT_rand_state
 
 protected = true
 
 function Mz_evolve(N::Int, nsteps::Int64, Jt)
     t_vec = Vector{Float64}();
     Mz_vec = Vector{Float64}();
-    ψ = zero_state(N) |> Xstrodd(N)
+    ψ = rand_state(N) |> Xstrodd(N)
     for i = 0:nsteps
         append!(t_vec, i)
         if protected
@@ -45,7 +45,7 @@ function Mz_evolve(N::Int, nsteps::Int64, Jt)
         end
         append!(Mz_vec, expect(Mzodd(N), ψ))
     end
-    return t_vec, Mz_vec
+    return t_vec, Mz_vec, ψ
 end
 
 
@@ -63,7 +63,7 @@ function save_plot(name, q, step, plot, label)
     #savefig(plot, epsfilename)
 end
 
-for q =6 # Number of qubits for each
+for q = 6 # Number of qubits for each
     for step = 1000
         figpath1 = "C:/Users/Daniel/OneDrive/Documents/Exeter Uni/Modules/Year 3/Project-Time crystals/Julia Code/Graphs/" *plot_name* " " *string(q)* " qubits/" * string(step) * " steps/"
         # 1 after variable names denote they're local variables in the for loop
@@ -95,6 +95,3 @@ for q =6 # Number of qubits for each
 end
 
 println("Successfully finished")
-
-#t_vec, Mz_vec = Mz_evolve(6, 400, 1.)
-#plot(t_vec, Mz_vec, linetype=:steppre)
