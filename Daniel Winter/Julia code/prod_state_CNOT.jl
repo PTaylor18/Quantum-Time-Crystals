@@ -21,8 +21,10 @@ using Distributions
 #RZstr(N::Int) = chain(N, prod([put(N, i=>Rz(rand(Uniform(0.5,2.5)))) for i=1:N]))
 
 
-Hz(N::Int) = rand(Uniform(0.05,0.5)) * sum([put(N, i => Z) for i = 1:N]) + 0.05 * sum([put(N, i => X) for i = 1:N])
+#Hz(N::Int) = rand(Uniform(0.05,0.5)) * sum([put(N, i => Z) for i = 1:N]) + 0.05 * sum([put(N, i => X) for i = 1:N])
 RZstr(N::Int) = time_evolve(Hz(N), 1., tol=1e-5, check_hermicity=true)
+
+Hz(N::Int) = rand(Uniform(0.05,0.5)) * sum([put(N, i => Z) for i = 1:N]) + 0.5 * sum([put(N, i => X) for i = 1:N])
 
 macro Name(arg)
    string(arg)
@@ -63,12 +65,12 @@ function save_plot(name, q, step, plot, label)
     #savefig(plot, epsfilename)
 end
 
-for q = 12 # Number of qubits for each
-    for step = 300
+for q = 2:4:10 # Number of qubits for each
+    for step = 200:100:300
         figpath1 = "C:/Users/Daniel/OneDrive/Documents/Exeter Uni/Modules/Year 3/Project-Time crystals/Julia Code/Graphs/" *plot_name* " " *string(q)* " qubits/" * string(step) * " steps/"
         # 1 after variable names denote they're local variables in the for loop
         # And here is where the file path is defined for each iteration.
-        for i = (0:20)*pi
+        for i = (0:5:10)*pi
             title1 = "" *string(plot_name)* " plot for "* string(q) * " Qubits Jt = " * string(round(i/(10*pi), digits=2))*" π"
             t_vec1, Mz_vec1 = Mz_evolve(q, step, i/10)
             plt=Plots.plot(t_vec1, Mz_vec1, linetype=:steppre, xlabel = "Time/ period of driving field", xlims = (0, step), ylabel = " \n"*"Magnetisation / fraction of maximum value\n and orientation", legend = false)
@@ -84,10 +86,10 @@ for q = 12 # Number of qubits for each
             Mz_vec_fft1 = fft(Mz_vec1)
             fourier=Plots.plot(abs.(Mz_vec_fft1), linetype=:steppre, xlabel="Frequecy", xlims = (0, step), ylabel="Intensity", legend = false)
             Plots.title!(tit1)
-            display(fourier)
+            #display(fourier)
             lab="FFT of "*string(plot_name)* " plot for "* string(q) * " Qubits for Jt = " * string(round(i/(10*pi), digits=2))*" π";
 
-            save_plot(plot_name, q, step, fourier, lab) # Saves the plots to github
+            #save_plot(plot_name, q, step, fourier, lab) # Saves the plots to github
         end
         println("Successfully finished "*string(step)*" steps\n")
     end

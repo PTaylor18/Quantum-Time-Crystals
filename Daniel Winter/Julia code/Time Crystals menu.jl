@@ -6,7 +6,7 @@ using Plots
 #Menu Packages
 using TerminalMenus
 
-options = ["DTC", "CNOT",]
+options = ["1. DTC", "2. CNOT",]
 
 menu = RadioMenu(options, pagesize=3)
 
@@ -28,7 +28,7 @@ if choice != -1
     RXstr(N::Int) = chain(N, prod([put(N, i=>Rx(0.1)) for i=1:N]))
     #Hzz(N::Int) = sum([-1 * put(N, i+1 => Z) * put(N, i => Z) for i = 1:N-1])
     #Uzz(N::Int, Jt::Float64) = time_evolve(H_ZZ(N), Jt, tol=1e-5, check_hermicity=true)
-    if choice == "CNOT"
+    if choice == "1"
 
         function Mz_evolve(N::Int, nsteps::Int64, Jt)
             protected = true
