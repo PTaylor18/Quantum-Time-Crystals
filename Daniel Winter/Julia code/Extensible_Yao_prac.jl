@@ -35,13 +35,17 @@ iqft(n)=qft(n)';
 iqft(3)
 
 #Listing 6: Heisenberg Hamiltonian
-using KrylovKit: eigsolve
+using KrylovKit: eigsolve;
 
-bond(n,i) = sum([put(n, i=>σ) * put(n, i+1=>σ) for σ in (X,Y,Z)]);
+bond(n, i) = sum([put(n, i=>σ) * put(n, i+1=>σ) for σ in (X, Y, Z)]);
 
-heisenberg(n) = sum([bond(n,i)
+heisenberg(n) = sum([bond(n, i)
         for i in 1:n-1]);
 
-h=heisenberg(16);
+h = heisenberg(16);
 w, v = eigsolve(mat(h)
         ,1, :SR, ishermitian=true)
+
+#Listing 7: Hamiltonian evolution is fasser with cache
+using BenchmarkTools
+te = time_evolve(h, 0.1);
