@@ -42,10 +42,55 @@ bond(n, i) = sum([put(n, i=>σ) * put(n, i+1=>σ) for σ in (X, Y, Z)]);
 heisenberg(n) = sum([bond(n, i)
         for i in 1:n-1]);
 
-h = heisenberg(16);
-w, v = eigsolve(mat(h)
-        ,1, :SR, ishermitian=true)
+h = heisenberg(10);
+#w, v = eigsolve(mat(h)
+#        ,1, :SR, ishermitian=true)
 
-#Listing 7: Hamiltonian evolution is fasser with cache
+#Listing 7: Hamiltonian evolution is faster with cache
 using BenchmarkTools
 te = time_evolve(h, 0.1);
+te_cache = time_evolve(cache(h), 0.1);
+
+
+@btime $(rand_state(10)) |> $te;
+@btime $(rand_state(10)) |> $te_cache;
+
+h |> decompose
+
+#Listing 8: Circuit simulation is faster without cache
+r= rand_state(10);
+@btime r |> $(qft(10));
+
+@btime r|> $(cache(qft(10)));
+
+#Listing 9: 10000-layer VQE
+using YaoExtensions
+n = 10; depth = 10000;
+
+circuit = dispatch!(
+        variational_circuit(n, depth),
+        :random);
+
+gatecount(circuit)
+
+nparameters(circuit)
+
+h=heisenberg(n);
+
+#This is very slow on the computer even though it is faster then without Yao
+#for i = 1:100
+#        _, grad = expect'(h, zero_state(n)=>circuit)
+#        dispatch!(-, circuit, 1e-3 * grad)
+#        println("Step $i, energy = $(expect(h, zero_state(10)=>circuit))")
+#end
+
+# This is very very slow
+#grad = faithful_grad(h, zero_state(n)=>circuit; nshots=100);
+
+#Listing 10: The eigendecomposition of a QBIR
+O=chain(5, put(5,2=>X), put(5,3=>Y))
+
+E, U = YaoBlocks.eigenbasis(O)
+
+#Listing 11: gradient of a maximum mean discrepancy
+target_p = normalize!(rand(1<<5));
