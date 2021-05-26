@@ -43,8 +43,7 @@ heisenberg(n) = sum([bond(n, i)
         for i in 1:n-1]);
 
 h = heisenberg(10);
-w, v = eigsolve(mat(h)
-        ,1, :SR, ishermitian=true)
+w, v = eigsolve(mat(h), 1, :SR, ishermitian=true)
 
 #Listing 7: Hamiltonian evolution is faster with cache
 using BenchmarkTools
