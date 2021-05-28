@@ -4,6 +4,8 @@ N = 6
 Xstring = chain(N, prod([put(N, i=>X) for i=1:N]))
 ZZpairs = sum([chain(N, put(N, i=>Z)*put(N, i+1=>Z)) for i=1:N-1])
 
+iscommute(Xstring, ZZpairs)
+
 U(Jt::Float64) = time_evolve(0.5 * Xstring + 0.5 * ZZpairs, Jt, tol=1e-5, check_hermicity=true)
 Mz(N::Int) = sum([put(N, i => Z) for i = 1:N]) / N
 
