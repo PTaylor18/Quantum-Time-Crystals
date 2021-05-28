@@ -67,7 +67,7 @@ for j = N # Number of qubits for each
 
             label=title1;
 
-            save_plot(plot_name, j, step, fig, label) # Saves the plots to github
+            #save_plot(plot_name, j, step, fig, label) # Saves the plots to github
             display(fig)
 
             tit1 = "FFT of "*string(plot_name)* " plot for "* string(j) * " Qubits for Jt = " * string(round(i/(10*pi), digits=2))*" π"
