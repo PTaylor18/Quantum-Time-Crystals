@@ -32,6 +32,7 @@ plot(t_vec[9000:10000], Mz_vec[9000:10000])
 # check if the operators commute
 iscommute(Xstring, ZZpairs)
 
+
 # implement the sequence of commuting ZZ evolutions as CNOT - Rz - CNOT
 function zz_evolve(n::Int, angle::Float64)
     cirq = chain(n)
