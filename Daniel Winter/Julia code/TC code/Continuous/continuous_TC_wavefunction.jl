@@ -11,7 +11,7 @@ Ystring = chain(N, prod([put(N, i=>Y) for i=1:N]))
 Zstring = chain(N, prod([put(N, i=>Z) for i=1:N]))
 ZZpairs = sum([chain(N, put(N, i=>Z)*put(N, i+1=>Z)) for i=1:N-1])
 
-U(Jt::Float64) = time_evolve(0.5 * Xstring + 0.0 * Ystring + 0.0 * Zstring + 0.5 * ZZpairs, Jt, tol=1e-15, check_hermicity=true)
+U(Jt::Float64) = time_evolve(0.0 * Xstring + 0.0 * Ystring + 0.5 * Zstring + 0.0 * ZZpairs, Jt, tol=1e-15, check_hermicity=true)
 Mz(N::Int) = sum([put(N, i => Z) for i = 1:N]) / N
 
 macro Name(arg)
