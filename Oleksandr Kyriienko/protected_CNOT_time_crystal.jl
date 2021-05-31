@@ -27,11 +27,12 @@ function Mz_evolve(N::Int, nsteps::Int64, Jt)
     protected = true
     t_vec = Vector{Float64}();
     Mz_vec = Vector{Float64}();
-    ψ = zero_state(N) |> Xstrodd(N)
+    #ψ = zero_state(N) |> Xstrodd(N)
+    ψ = zero_state(N) |> chain(N, put(1 => X))
     for i = 0:nsteps
         append!(t_vec, i)
         if protected
-            ψ |> CNOTodd(N) |> CNOTeven(N) |> RZstr(N) |> RXstr(N)
+            ψ |> CNOTodd(N) |> CNOTeven(N) |> RZstr(N) #|> RXstr(N)
         else
             ψ |> CNOTodd(N) |> CNOTeven(N)  |> RXstr(N)
         end
@@ -40,5 +41,5 @@ function Mz_evolve(N::Int, nsteps::Int64, Jt)
     return t_vec, Mz_vec
 end
 
-t_vec, Mz_vec = Mz_evolve(6, 400, 1.)
+t_vec, Mz_vec = Mz_evolve(10, 500, 1.)
 plot(t_vec, Mz_vec, linetype=:steppre)
