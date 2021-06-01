@@ -1,16 +1,19 @@
 using Yao
 using Plots
 using FFTW
+using YaoExtensions
 theme(:dao)
 
-println("Successfully started from beginnig")
 
+println("Successfully started the program")
 
-N=6
+N=12
 Zstring = chain(N, prod([put(N, i=>Z) for i=1:N]))
 RXstr(N::Int) = chain(N, prod([put(N, i=>Rx(0.05)) for i=1:N]))
+Srot(N::Int) = chain(N, prod([put(N, i=> PhaseGate(pi/2)) for i=1:N]))
+RZstr(N::Int) = chain(N, prod([put(N, i=>Rz(0.05)) for i=1:N]))
 
-U(Jt::Float64) = time_evolve(Zstring, Jt, tol=1e-5, check_hermicity=true)
+U(Jt::Float64) = time_evolve(Zstring, Jt, tol=1e-5, check_hermicity=true) # Cavity-QED scheme
 Mz(N::Int) = sum([put(N, i => Z) for i = 1:N]) / N
 
 macro Name(arg)
@@ -25,12 +28,20 @@ function Mz_evolve(N::Int, nsteps::Int64, deltaJt)
     t_vec = Vector{Float64}();
     Mz_vec = Vector{Float64}();
     ψ = zero_state(N)
+    #ψ = product_state(N,1)
+    #ψ = rand_state(N)
     for i = 0:nsteps
         append!(t_vec, i * deltaJt)
         if protected
-            ψ |> U(i * deltaJt) |> RXstr(N) |> U(i * deltaJt)
+            #ψ |>Srot(N) |> U(i * deltaJt) |> RXstr(N) |> U(i * deltaJt) |> Srot(N)
+            ψ |>RZstr(N) |> U(i * deltaJt) |> RXstr(N) |> U(i * deltaJt) |> RZstr(N)
+
+            #ψ |> U(i * deltaJt) |> RXstr(N) |> U(i * deltaJt)
         else
-            ψ |> U(i * deltaJt) |> RXstr(N) |> U(i * deltaJt)
+            #ψ |>Srot(N) |> U(i * deltaJt) |> RXstr(N) |> U(i * deltaJt) |> Srot(N)
+            ψ |>RZstr(N) |> U(i * deltaJt) |> RXstr(N) |> U(i * deltaJt) |> RZstr(N)
+
+            #ψ |> U(i * deltaJt) |> RXstr(N) |> U(i * deltaJt)
         end
         append!(Mz_vec, expect(Mz(N), ψ))
     end
@@ -52,13 +63,12 @@ function save_plot(name, N, step, plot, label)
     #savefig(plot, epsfilename)
 end
 
-1.0e6
 
 for j = N # Number of qubits for each
     low= 1
-    hig = 1000000
+    hig = 100000
     rang=low:hig
-    for step = 1000000
+    for step = 100000
         figpath1 = "C:/Users/Daniel/OneDrive/Documents/Exeter Uni/Modules/Year 3/Project-Time crystals/Julia Code/Graphs/" *plot_name* " " *string(j)* " qubits/" * string(step) * " steps/"
         # 1 after variable names denote they're local variables in the for loop
         # And here is where the file path is defined for each iteration.
@@ -74,18 +84,18 @@ for j = N # Number of qubits for each
             save_plot(plot_name, j, step, plt, label) # Saves the plots to github
             display(plt)
 
-            #tit1 = "FFT of "*string(plot_name)* " plot for "* string(j) * " Qubits for Jt = " * string(i)
-            #Mz_vec_fft1 = fft(Mz_vec1)
-            #fourier=Plots.plot(abs.(Mz_vec_fft1), linetype=:steppre, xlabel="Frequecy", xlims = (0, step), ylabel="Intensity", legend = false)
-            #Plots.title!(tit1)
-            #display(fourier)
-            #lab="FFT of "*string(plot_name)* " plot for "* string(j) * " Qubits for Jt = " * string(i);
+            tit1 = "FFT of "*string(plot_name)* " plot for "* string(j) * " Qubits for Jt = " * string(i)
+            Mz_vec_fft1 = fft(Mz_vec1)
+            fourier=Plots.plot(abs.(Mz_vec_fft1), linetype=:steppre, xlabel="Frequecy", xlims = (0, step), ylabel="Intensity", legend = false)
+            Plots.title!(tit1)
+            display(fourier)
+            lab="FFT of "*string(plot_name)* " plot for "* string(j) * " Qubits for Jt = " * string(i);
 
-            #save_plot(plot_name, j, step, fourier, lab) # Saves the plots to github
+            save_plot(plot_name, j, step, fourier, lab) # Saves the plots to github
         end
         println("Successfully finished "*string(step)*" steps\n")
     end
     println("Successfully finished "*string(j)*" qubits\n")
 end
 
-println("Successfully finished")
+println("Successfully executed the program")
