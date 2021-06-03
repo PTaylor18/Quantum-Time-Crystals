@@ -8,13 +8,13 @@ using CUDA
 #r = ArrayReg(bit"1010");
 
 #transfer data to CUDA
-r = cu(ArrayReg(bit"1010"));
+#r = cu(ArrayReg(bit"1010"));
 
 #Listing 13: instruct! and measure
-r = zero_state(4);
-instruct!(r, Val(:X), (1, ))
-samples = measure(r; nshots=3)
-[samples[1]...]
+#r = zero_state(4);
+#instruct!(r, Val(:X), (1, ))
+#samples = measure(r; nshots=3)
+#[samples[1]...]
 
 
 N = 6
