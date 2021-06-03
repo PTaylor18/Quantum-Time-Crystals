@@ -1,6 +1,21 @@
 using Yao
 
-#S=sqrt(Z)
+#Listing 12: CUDA register
+using CuYao
+using CUDA
+
+#constructs the |1010> state
+#r = ArrayReg(bit"1010");
+
+#transfer data to CUDA
+r = cu(ArrayReg(bit"1010"));
+
+#Listing 13: instruct! and measure
+r = zero_state(4);
+instruct!(r, Val(:X), (1, ))
+samples = measure(r; nshots=3)
+[samples[1]...]
+
 
 N = 6
 Xstring = chain(N, prod([put(N, i=>X) for i=1:N]))
