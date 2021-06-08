@@ -76,11 +76,14 @@ let
   #psi = productMPS(s, n -> isodd(n) ? "Up" : "Dn")
 
   # Initialize psi to be an all up state
-  psi = productMPS(s, n -> "Up")
+  #psi = productMPS(s, n -> "Up")
 
+  # Initialize psi to have one up state and the rest down
+  psi = productMPS(s, n -> "Up")
+  append!(psi, productMPS(s, n -> "Dn");
 
   # smaller bond dimension which is as close to the original MPS as possible
-   truncate!( psi; maxdim =500 , cutoff =cutoff)
+  truncate!( psi; maxdim =500 , cutoff =cutoff)
 
   c = div(N,2)
 
