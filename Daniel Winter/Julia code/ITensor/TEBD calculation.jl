@@ -31,7 +31,7 @@ let
 
   # Make an array of 'site' indices
   # Defiens array of spin 1/2 tensor indices
-  s = siteinds("S=1/2",N;conserve_qns=true)
+  s = siteinds("S=1/2",N;conserve_qns=false)
 
   # Make gates (1,2),(2,3),(3,4),...
   # Makes an empty array that will hold ITensors
@@ -40,8 +40,8 @@ let
   for j=1:N-1
     s1 = s[j]
     s2 = s[j+1]
-    hj =       op("Sz",s1) * op("Sz",s2) +
-               #op("Sx",s1) * op("Sx",s2) +
+    hj =       #op("Sz",s1) * op("Sz",s2) +
+               op("Sx",s1) * op("Sx",s2) +
          1/2 * op("S+",s1) * op("S-",s2) +
          1/2 * op("S-",s1) * op("S+",s2)
     # The op function reads "S=1/2" tag on the site indices (sites j and j+1)
@@ -76,39 +76,36 @@ let
   #psi = productMPS(s, n -> isodd(n) ? "Up" : "Dn")
 
   # Initialize psi to be an all up state
-  #psi = productMPS(s, n -> "Up")
-
-  # Initialize psi to have one up state and the rest down
   psi = productMPS(s, n -> "Up")
-  append!(psi, productMPS(s, n -> "Dn");
+
 
   # smaller bond dimension which is as close to the original MPS as possible
-  truncate!( psi; maxdim =500 , cutoff =cutoff)
+   truncate!( psi; maxdim =500 , cutoff =cutoff)
 
   c = div(N,2)
 
   # Compute and print initial <Sz> value
   t = 0.0
-  Sz = measure_Sz(psi,c)
-  #Sx = measure_Sx(psi,c)
+  #Sz = measure_Sz(psi,c)
+  Sx = measure_Sx(psi,c)
 
-  println("$t $Sz")
-  #println("$t $Sx")
+  #println("$t $Sz")
+  println("$t $Sx")
 
   # Do the time evolution by applying the gates
   # for Nsteps steps
-  spin = [Sz]
-  #spin = [Sx]
+  #spin = [Sz]
+  spin = [Sx]
   for step=1:Nsteps
     psi = apply(gates, psi; cutoff=cutoff)
-     #truncate!( psi; maxdim =200 , cutoff =cutoff)
+     truncate!( psi; maxdim =100 , cutoff =cutoff)
     t += tau
-    Sz1 = measure_Sz(psi,c)
-    #Sx1 = measure_Sx(psi,c)
-    push!(spin, Sz1)
-    #push!(spin, Sx1)
-    println("$t $Sz")
-    #println("$t $Sx")
+    #Sz1 = measure_Sz(psi,c)
+    Sx1 = measure_Sx(psi,c)
+    #push!(spin, Sz1)
+    push!(spin, Sx1)
+    #println("$t $Sz")
+    println("$t $Sx")
   end
 
   title1 = "Local spin of site "*string(c)*" of "*string(N)*" sites over time"
