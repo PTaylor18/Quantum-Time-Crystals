@@ -9,7 +9,7 @@ Zstring = chain(N, prod([put(N, i=>Z) for i=1:N]))
 ZZpairs = sum([chain(N, put(N, i=>Z)*put(N, i+1=>Z)) for i=1:N-1])
 Xrotstring = chain(N, prod([put(N, i=>Rx(0.05)) for i=1:N]))
 
-U(Jt::Float64) = time_evolve(0.5 * Zstring + 0.5 * ZZpairs + 0.5 * Xrotstring, Jt, tol=1e-5, check_hermicity=true)
+U(Jt::Float64) = time_evolve(Zstring + ZZpairs + Xrotstring, Jt, tol=1e-5, check_hermicity=false)
 #U(Jt::Float64) = time_evolve(0.5 * Zstring + 0.5 * ZZpairs, Jt, tol=1e-5, check_hermicity=true)
 
 Mz(N::Int) = sum([put(N, i => Z) for i = 1:N]) / N

@@ -84,7 +84,7 @@ for q = 6 # Number of qubits for each
             Mz_vec_fft1 = fft(Mz_vec1)
             fourier=Plots.plot(abs.(Mz_vec_fft1), linetype=:steppre, xlabel="Frequecy", xlims = (0, step), ylabel="Intensity", legend = false)
             Plots.title!(tit1)
-            display(fourier)
+            #display(fourier)
             lab="FFT of "*string(plot_name)* " plot for "* string(q) * " Qubits for Jt = " * string(i/10);
 
             #save_plot(plot_name, q, step, fourier, lab) # Saves the plots to github
