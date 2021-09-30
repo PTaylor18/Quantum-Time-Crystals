@@ -80,10 +80,10 @@ let
 
   # Initialize psi to have one up state and the rest down
   psi = productMPS(s, n -> "Up")
-  append!(psi, productMPS(s, n -> "Dn");
+  append!(psi, productMPS(s, n -> "Dn"));
 
   # smaller bond dimension which is as close to the original MPS as possible
-  truncate!( psi; maxdim =500 , cutoff =cutoff)
+  truncate!(psi; maxdim =500 , cutoff =cutoff)
 
   c = div(N,2)
 

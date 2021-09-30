@@ -48,7 +48,7 @@ function save_plot(name, q, step, plot, label)
     pngfilename = string(dir,"\\Graphs\\","\\",name,"\\","\\",name,"_",q, " qubits\\","\\",step," steps\\",strlabel,".png")
     #pdffilename = string(dir,"\\Graphs\\","\\",name,"_",q, " qubits\\","\\",step," steps\\",strlabel,".pdf")
     #epsfilename = string(dir,"\\Graphs\\","\\",name,"_",q, " qubits\\","\\",step," steps\\",strlabel,".eps")
-    savefig(plot, pngfilename)
+    #savefig(plot, pngfilename)
     #savefig(plot, pdffilename)
     #savefig(plot, epsfilename)
 end
@@ -60,7 +60,7 @@ for q = 2:2:6 # Number of qubits for each
         figpath1 = "C:/Users/Daniel/OneDrive/Documents/Exeter Uni/Modules/Year 3/Project-Time crystals/Julia Code/Graphs/" *plot_name* " " *string(q)* " qubits/" * string(step) * " steps/"
         # 1 after variable names denote they're local variables in the for loop
         # And here is where the file path is defined for each iteration.
-        for i = 3
+        for i = 10
             title1 = "" *string(plot_name)* " plot for "* string(q) * " Qubits for " * string(step)* " cycles for Jt = " * string(i/10)
             t_vec1, Mz_vec1 = Mz_evolve(q, step, i/10)
             plt=Plots.plot(t_vec1, Mz_vec1, linetype=:steppre, xlabel = "Time/ period of driving field", xlims = (0, step), ylabel = " \n"*"Magnetisation / fraction of maximum value\n and orientation", legend = false)
@@ -76,10 +76,10 @@ for q = 2:2:6 # Number of qubits for each
             Mz_vec_fft1 = fft(Mz_vec1)
             fourier=Plots.plot(abs.(Mz_vec_fft1), linetype=:steppre, xlabel="Frequecy", xlims = (0, step), ylabel="Intensity", legend = false)
             Plots.title!(tit1)
-            display(fourier)
+            #display(fourier)
             lab="Fourier transfrom of "*string(plot_name)* " plot for "* string(q) * " Qubits for " * string(step)* " cycles for Jt = " * string(i/10);
 
-            save_plot(plot_name, q, step, fourier, lab) # Saves the plots to github
+            #save_plot(plot_name, q, step, fourier, lab) # Saves the plots to github
         end
         println("Successfully finished "*string(step)*" steps\n")
     end
