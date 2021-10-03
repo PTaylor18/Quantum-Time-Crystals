@@ -23,8 +23,8 @@ plot_name = @Name Local_site
 let
   N = 100
   cutoff = 1E-8
-  tau = 0.1
-  ttotal = 1000*tau
+  tau = 0.5
+  ttotal = 100*tau
   println("Successfully started \n")
   # Compute the number of steps to do
   Nsteps = Int(ttotal/tau)
