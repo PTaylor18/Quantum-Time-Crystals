@@ -21,7 +21,7 @@ plot_name = @Name Local_site
 
 
 let
-  N = 100
+  N = 10
   cutoff = 1E-8
   tau = 0.5
   ttotal = 100*tau
@@ -80,7 +80,7 @@ let
 
 
   # smaller bond dimension which is as close to the original MPS as possible
-   truncate!( psi; maxdim =500 , cutoff =cutoff)
+   truncate!( psi; maxdim =10 , cutoff =cutoff)
 
   c = div(N,2)
 
@@ -98,7 +98,7 @@ let
   spin = [Sx]
   for step=1:Nsteps
     psi = apply(gates, psi; cutoff=cutoff)
-     truncate!( psi; maxdim =100 , cutoff =cutoff)
+    truncate!( psi; maxdim =10 , cutoff =cutoff)
     t += tau
     #Sz1 = measure_Sz(psi,c)
     Sx1 = measure_Sx(psi,c)
