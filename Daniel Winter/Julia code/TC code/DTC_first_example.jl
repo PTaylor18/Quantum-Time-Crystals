@@ -63,7 +63,8 @@ for q = 5 # Number of qubits for each
             #Plots.savefig(figpath1*title1*".png") #Saves the plots onto my computer but requires me to make a folder
 
             label=title1;
-            save_plot(plot_name, q, step, plt, label) # Saves the plots to github
+            display(plt)
+            #save_plot(plot_name, q, step, plt, label) # Saves the plots to github
         end
         println("Successfully finished "*string(step)*" steps\n")
     end
