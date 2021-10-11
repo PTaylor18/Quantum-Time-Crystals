@@ -11,18 +11,26 @@ depth = 4 # Depth of the quantum circuit
 # layers of single-qubit random rotations + `CX`
 # gates, alternating between even and of odd layers.
 println("Random circuit of depth $depth on $N qubits:")
+println()
+println()
 circuit = randomcircuit(N, depth; twoqubitgates="CX", onequbitgates="Rn")
 display(circuit)
-println()
+for i=0:50
+  println()
+end
 
 # 1. Unitary quantum circuit
 # Returns the MPS at the output of the quantum circuit:
 # `|ψ⟩ = Û|0,0,…,0⟩`
 # where `Û` is the unitary circuit.
 println("Applying random circuit to compute |ψ⟩ = U|0,0,…,0⟩...")
+println()
+println()
 ψ = runcircuit(circuit)
 @show maxlinkdim(ψ)
-println()
+for i=0:50
+  println()
+end
 
 # A representation of the unitary operation as a MPO
 # is obtained using the flag `process=true`:
