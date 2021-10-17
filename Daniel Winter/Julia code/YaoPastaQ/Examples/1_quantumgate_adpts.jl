@@ -4,10 +4,6 @@ using Random
 using Plots
 theme(:dao)
 
-# Set the random seed so the results are the same
-# each time it is run
-Random.seed!(1234)
-
 ψ = qubits(4)
 
 # Apply the X gate on qubit N
@@ -25,28 +21,51 @@ gRx(N::Int) = ("Rx", N, (θ=0.1,))
 gCNOTodd(N::Int) = ("CNOT", (N, N + 1))
 gCNOTeven(N::Int) = ("CNOT",(N, (N+1)%N))
 
+# Define custom function to measure an observable, in this
+# case a Pauli operator on `site`
+function measure_pauli(ψ::MPS, site::Int, pauli::String)
+  ψ = orthogonalize!(copy(ψ), site)
+  ϕ = ψ[site]
+  obs_op = gate(pauli, firstsiteind(ψ, site))
+  T = noprime(ϕ * obs_op)
+  return real((dag(T) * ϕ)[])
+end
+
+# pauli X on site 2
+σx2(ψ::MPS) = measure_pauli(ψ, 2, "X")
+σz(ψ::MPS) = [measure_pauli(ψ, j, "Z") for j in 1:length(ψ)]
+
+# define the Circuit observer
+obs = Observer([
+  "χs" => linkdims,      # bond dimension at each bond
+  "χmax" => maxlinkdim,  # maximum bond dimension
+  "σˣ(2)" => σx2,        # pauli X on site 2
+  "σᶻ" => σz,
+])
 
 function Mz_evolve(N::Int, nsteps::Int64)
     t_vec = Vector{Float64}();
     Mz_vec = Vector{Float64}();
 
     # Initialize the MPS state ψ = |0,0,0,...,0⟩
-    ψ = qubits(N)
+    circuit = qubits(N)
+    # Initialize the MPS state ψ = |0,1,0,1,...,0,1>
     for a=1:2:N
-        ψ = runcircuit(ψ,gX(a))
+        circuit = runcircuit(circuit,gX(a))
     end
     for i = 0:nsteps
         append!(t_vec, i)
         for j=1:2:N
-            ψ = runcircuit(ψ,gCNOTodd(j))
+            circuit = runcircuit(circuit,gCNOTodd(j))
         end
         for k=2:2:N
-            ψ = runcircuit(ψ,gCNOTeven(k))
+            circuit = runcircuit(circuit,gCNOTeven(k))
         end
         for l=1:N
-            ψ = runcircuit(ψ,gRx(l))
+            circuit = runcircuit(circuit,gRx(l))
         end
-        append!(Mz_vec, sum(getsamples(ψ,1))/N)
+        ψ = runcircuit(circuit; (observer!)=obs)
+        append!(Mz_vec, sum(sum(results(obs, "σᶻ"))))
     end
     return t_vec, Mz_vec
 end
