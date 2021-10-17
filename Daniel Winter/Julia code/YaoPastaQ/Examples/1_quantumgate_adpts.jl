@@ -4,8 +4,6 @@ using Random
 using Plots
 theme(:dao)
 
-ψ = qubits(4)
-
 # Apply the X gate on qubit N
 gX(N::Int) = ("X", N)
 # Apply the Y gate on qubit N
@@ -31,41 +29,50 @@ function measure_pauli(ψ::MPS, site::Int, pauli::String)
   return real((dag(T) * ϕ)[])
 end
 
-# pauli X on site 2
+# coupling indices for ZZ gates
+coupling_sequence = [(1,2),(3,4)]
+
+# create the TC Unitary
+circuit = [gatelayer("Rx", 4; (θ=π*0.97)),
+          [("ZZ_couple", coupling_sequence[i]) for i=1:length(coupling_sequence)]]
+
 σx2(ψ::MPS) = measure_pauli(ψ, 2, "X")
+σz05(ψ::MPS) = measure_pauli(ψ, 25, "Z")
 σz(ψ::MPS) = [measure_pauli(ψ, j, "Z") for j in 1:length(ψ)]
 
-# define the Circuit observer
-obs = Observer([
-  "χs" => linkdims,      # bond dimension at each bond
-  "χmax" => maxlinkdim,  # maximum bond dimension
-  "σˣ(2)" => σx2,        # pauli X on site 2
-  "σᶻ" => σz,
-])
+function coupling_seq(N)
+    sequence  = []
+    for i=1:2:N-1
+      push!(sequence, (i,i+1))
+    end
+    return sequence
+end
 
-function Mz_evolve(N::Int, nsteps::Int64)
+function Mz_evolve(N, nsteps)
     t_vec = Vector{Float64}();
     Mz_vec = Vector{Float64}();
-
-    # Initialize the MPS state ψ = |0,0,0,...,0⟩
-    circuit = qubits(N)
-    # Initialize the MPS state ψ = |0,1,0,1,...,0,1>
-    for a=1:2:N
-        circuit = runcircuit(circuit,gX(a))
-    end
-    for i = 0:nsteps
+    coupling_sequence = coupling_seq(N);
+    circuit = Vector[];
+    # first layer
+    layer = [gatelayer("Rx", N; (θ=rand(Uniform(π*0.5, π*1.5)))), #π*0.97
+            [("ZZ_couple", coupling_sequence[i]) for i=1:length(coupling_sequence)],
+            gatelayer("Rz", N; (ϕ=π))] #π
+    for i=1:nsteps
         append!(t_vec, i)
-        for j=1:2:N
-            circuit = runcircuit(circuit,gCNOTodd(j))
-        end
-        for k=2:2:N
-            circuit = runcircuit(circuit,gCNOTeven(k))
-        end
-        for l=1:N
-            circuit = runcircuit(circuit,gRx(l))
-        end
-        ψ = runcircuit(circuit; (observer!)=obs)
-        append!(Mz_vec, sum(sum(results(obs, "σᶻ"))))
+        push!(circuit, layer)
+    end
+
+    # define the Circuit observer
+    obs = Observer([
+      "χs" => linkdims,      # bond dimension at each bond
+      "χmax" => maxlinkdim,  # maximum bond dimension
+      "σᶻ(0.5)" => σz05,        # pauli X on site 2
+      "σᶻ" => σz,
+    ])
+    ψ = runcircuit(circuit; (observer!)=obs)
+    Mz_res = results(obs, "σᶻ")
+    for i=1:length(Mz_res)
+        append!(Mz_vec, mean(Mz_res[i]))
     end
     return t_vec, Mz_vec
 end
@@ -90,8 +97,8 @@ end
 
 plot_name = @Name QuantumGate
 
-for q = 10 # Number of qubits for each
-    for step = 1000
+for q = 50 # Number of qubits for each
+    for step = 100
         figpath1 = "C:/Users/Daniel/OneDrive/Documents/Exeter Uni/Modules/Year 3/Project-Time crystals/Julia Code/Graphs/DTC " * string(q)* " qubits/" * string(step) * " steps/"
         # 1 after variable names denote they're local variables in the for loop
         # And here is where the file path is defined for each iteration.
