@@ -47,7 +47,7 @@ function plot_spin_and_entropy(N, ttotal, n)
     s1 = s[j]
     s2 = s[j+1]
     # hj is the operator which is summed over j to return the total
-    # Hamiltonian.
+    # Hamiltonian, known as the 1D Heisenberg Hamiltonian.
     hj =       op("Sz",s1) * op("Sz",s2) +
          1/2 * op("S+",s1) * op("S-",s2) +
          1/2 * op("S-",s1) * op("S+",s2)
@@ -94,14 +94,14 @@ function plot_spin_and_entropy(N, ttotal, n)
   graph2 = Plots.plot(collect(0:tau:ttotal), See, xlabel = "Time",
            ylabel = "local entanglement entropy", title = graph2title, size=(650, 540))
   twofigplot = Plots.plot(graph, graph2, layout=(2,1), show = true, legend=false, size=(700, 1020))
-  display(twofigplot)
   twofigtitle = "local spin and entanglement entropy of "*string(n)*" site of "*string(N)*" sites"
+  display(twofigplot)
   #savefig(twofigplot, twofigtitle*".png")
 
 end
 
-N=140
-plot_spin_and_entropy(N, 10, 130)
+N=30
+plot_spin_and_entropy(N, 10, 14)
 
 #= Note:
 
