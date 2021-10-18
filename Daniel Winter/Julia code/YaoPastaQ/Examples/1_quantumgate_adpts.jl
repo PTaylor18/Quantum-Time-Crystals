@@ -97,7 +97,7 @@ end
 
 plot_name = @Name QuantumGate
 
-for q = 50 # Number of qubits for each
+for q = 100 # Number of qubits for each
     for step = 100
         figpath1 = "C:/Users/Daniel/OneDrive/Documents/Exeter Uni/Modules/Year 3/Project-Time crystals/Julia Code/Graphs/DTC " * string(q)* " qubits/" * string(step) * " steps/"
         # 1 after variable names denote they're local variables in the for loop
