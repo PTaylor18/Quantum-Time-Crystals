@@ -1,12 +1,13 @@
 using PastaQ
 using ITensors
 using Printf
+using Distributions
 import PastaQ: gate
 
 
 gate(::GateName"expτZ"; τ::Float64) = exp(τ * h * gate("Z"))
 gate(::GateName"expτZZ"; τ::Float64) = exp(τ * Φ *kron(gate("Z"), gate("Z")))
-gate(::GateName"expτXr"; τ::Float64, B::Float64) = exp(τ * pi * g * gate("X"))
+gate(::GateName"expτXr"; τ::Float64, g::Float64) = exp(τ * pi * g * gate("X"))
 
 N = 10    # Number of spins
 h = -pi
@@ -37,7 +38,7 @@ sites = siteinds("Qubit", N)
 ampo = AutoMPO()
 for j in 1:N
   # Transverse field
-  ampo .+= -h, "Z", j
+  ampo .+= -rand(Uniform(-pi,pi)), "Z", j
 end
 for j in 1:(N - 1)
   # Ising ZZ interactions
@@ -45,7 +46,7 @@ for j in 1:(N - 1)
 end
 for j in 1:N
   # Transverse field X
-  ampo .+= -Φ, "X", j
+  ampo .+= -rand(Uniform(0.5*pi,1.5*pi)), "X", j
 end
 # Generate Hamilotnian MPO
 H = MPO(ampo, sites)

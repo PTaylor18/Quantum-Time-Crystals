@@ -101,7 +101,7 @@ println("\n---------------------------------------\n")
 # 2b. Run the imaginary-time circuit
 #
 
-β = 5.0 # Inverse temperature
+β = 10.0 # Inverse temperature
 Δ = 0.5  # Intermediate time-step
 depth = Δ ÷ τ # Depth of the circuit
 steps = β ÷ Δ # Total number of circuit application
