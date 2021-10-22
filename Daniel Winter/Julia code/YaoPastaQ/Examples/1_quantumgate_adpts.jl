@@ -1,7 +1,9 @@
 using PastaQ
+import PastaQ: gate
 using ITensors
 using Random
 using Plots
+using Distributions
 theme(:dao)
 
 # Apply the X gate on qubit N
@@ -18,6 +20,18 @@ gRx(N::Int) = ("Rx", N, (θ=0.1,))
 
 gCNOTodd(N::Int) = ("CNOT", (N, N + 1))
 gCNOTeven(N::Int) = ("CNOT",(N, (N+1)%N))
+
+function gate(::GateName"ZZ"; ϕ::Number)
+  return [
+    exp(-im*ϕ/2) 0 0 0
+    0 exp(im*ϕ/2) 0 0
+    0 0 exp(im*ϕ/2) 0
+    0 0 0 exp(-im*ϕ/2)
+  ]
+end
+
+
+gate(::GateName"ZZ_couple") = gate("ZZ", ϕ=-0.4)
 
 # Define custom function to measure an observable, in this
 # case a Pauli operator on `site`
@@ -37,7 +51,7 @@ circuit = [gatelayer("Rx", 4; (θ=π*0.97)),
           [("ZZ_couple", coupling_sequence[i]) for i=1:length(coupling_sequence)]]
 
 σx2(ψ::MPS) = measure_pauli(ψ, 2, "X")
-σz05(ψ::MPS) = measure_pauli(ψ, 25, "Z")
+σz05(ψ::MPS) = measure_pauli(ψ, 10, "Z")
 σz(ψ::MPS) = [measure_pauli(ψ, j, "Z") for j in 1:length(ψ)]
 
 function coupling_seq(N)
@@ -97,7 +111,7 @@ end
 
 plot_name = @Name QuantumGate
 
-for q = 100 # Number of qubits for each
+for q = 20 # Number of qubits for each
     for step = 100
         figpath1 = "C:/Users/Daniel/OneDrive/Documents/Exeter Uni/Modules/Year 3/Project-Time crystals/Julia Code/Graphs/DTC " * string(q)* " qubits/" * string(step) * " steps/"
         # 1 after variable names denote they're local variables in the for loop
