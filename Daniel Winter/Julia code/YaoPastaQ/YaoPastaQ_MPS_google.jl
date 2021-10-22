@@ -51,6 +51,22 @@ end
 # Generate Hamilotnian MPO
 H = MPO(ampo, sites)
 
+function measure(ψ::MPO, measurement::Tuple{String,Array{Int}}, s::Vector{<:Index})
+  result = []
+  sites0 = measurement[2]
+  ϕ = copy(ψ)
+  for site0 in sites0
+    site = findsite(ϕ, s[site0])
+    orthogonalize!(ϕ, site)
+    ϕs = ϕ[site]
+    obs_op = gate(measurement[1], firstsiteind(ϕ, site))
+    T = noprime(ϕs * obs_op)
+    push!(result, real((dag(T) * ϕs)[]))
+  end
+  return result
+end
+
+measure(H,"Z",1)
 # Density-matrix renormalization group
 dmrg_iter = 5      # DMRG steps
 dmrg_cutoff = 1E-10   # Cutoff
