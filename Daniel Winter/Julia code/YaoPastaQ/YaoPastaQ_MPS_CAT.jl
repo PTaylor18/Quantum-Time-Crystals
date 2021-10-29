@@ -15,16 +15,21 @@ gCNOTodd(N::Int) = ("CNOT", (N, N + 1))
 gCNOTeven(N::Int) = ("CNOT",(N, (N+1)%N))
 
 
-function gate(::GateName"ZZ"; ϕ::Number)
+function gate(::GateName"H";)
   return [
-    exp(-im*ϕ/2) 0 0 0
-    0 exp(im*ϕ/2) 0 0
-    0 0 exp(im*ϕ/2) 0
-    0 0 0 exp(-im*ϕ/2)
+    1/√2 1/√2
+    1/√2 -1/√2
   ]
 end
 
-gate(::GateName"ZZ_couple") = gate("ZZ", ϕ=-0.4)
+function gate(::GateName"CNOT";)
+    return [
+    1 0 0 0
+    0 1 0 0
+    0 0 0 1
+    0 0 1 0
+    ]
+end
 
 # Define custom function to measure an observable, in this
 # case a Pauli operator on `site`
@@ -48,13 +53,12 @@ function coupling_seq(N)
 end
 
 # create the TC Unitary
-circuit = [gatelayer("Rx", 4; (θ=π*0.97)),
-          [("ZZ_couple", coupling_sequence[i]) for i=1:length(coupling_sequence)]]
+circuit = [gatelayer("H", 1),
+        [("CNOT", coupling_sequence[i]) for i=1:length(coupling_sequence)]]
 
-σx2(ψ::MPS) = measure_pauli(ψ, 2, "X")
-σz05(ψ::MPS) = measure_pauli(ψ, 10, "Z")
+σx2(ψ::MPS) = measure_pauli(ψ, 2, "Z")
+σz05(ψ::MPS) = measure_pauli(ψ, 1, "Z")
 σz(ψ::MPS) = [measure_pauli(ψ, j, "Z") for j in 1:length(ψ)]
-
 
 function Mz_evolve(N, nsteps)
     t_vec = Vector{Float64}();
@@ -62,10 +66,13 @@ function Mz_evolve(N, nsteps)
     coupling_sequence = coupling_seq(N);
     circuit = Vector[];
     # first layer
-    layer = [gatelayer("Rx", N; (θ=rand(Uniform(π*0.5, π*1.5)))), #π*0.97
-            [("ZZ_couple", coupling_sequence[i]) for i=1:length(coupling_sequence)],
-            gatelayer("Rz", N; (ϕ=π))] #π
-    for i=1:nsteps
+    for j=1:N
+        append!(t_vec, j)
+        push!(circuit, gatelayer("H", j))
+    end
+    layer = [[("CNOT", (i, i+1)) for i=1:N-1],
+            [("CNOT", (j, j+1)) for j=N-1:-1:1]]
+    for i=N:nsteps
         append!(t_vec, i)
         push!(circuit, layer)
     end
@@ -105,7 +112,7 @@ end
 
 plot_name = @Name NoisyCAT
 
-for q = 20 # Number of qubits for each
+for q = 2:10 # Number of qubits for each
     for step = 100
         figpath1 = "C:/Users/Daniel/OneDrive/Documents/Exeter Uni/Modules/Year 3/Project-Time crystals/Julia Code/Graphs/DTC " * string(q)* " qubits/" * string(step) * " steps/"
         # 1 after variable names denote they're local variables in the for loop
