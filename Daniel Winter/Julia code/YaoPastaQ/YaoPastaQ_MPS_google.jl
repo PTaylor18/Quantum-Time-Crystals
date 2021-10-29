@@ -2,6 +2,7 @@ using PastaQ
 using ITensors
 using Printf
 using Distributions
+using ITensors
 import PastaQ: gate
 
 
@@ -67,6 +68,14 @@ function measure(ψ::MPO, measurement::Tuple{String,Array{Int}}, s::Vector{<:Ind
 end
 
 measure(H,"Z",1)
+
+psi = randomMPS(H)
+mag = expect(H,"Sz";site_range=5:5)
+
+#Try 6_ in PastaQ for example get samples could work
+#Try DTC cat state with noise
+#   magnetisation / Fidelity
+
 # Density-matrix renormalization group
 dmrg_iter = 5      # DMRG steps
 dmrg_cutoff = 1E-10   # Cutoff
