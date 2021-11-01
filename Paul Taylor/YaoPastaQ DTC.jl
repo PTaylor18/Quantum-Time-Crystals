@@ -12,35 +12,31 @@ function yao_dtc_to_list(n)
 
     cirq = chain(n)
     push!(cirq, chain(n, prod([put(n, i=>Rx(π*0.97)) for i=1:n]))) # RxStr
-    push!(cirq, prod([chain(n, put(n, i=>Rz(rand(Uniform(-π*1.5,-π*0.5))))*put(n, i+1=>Rz(rand(Uniform(-π*1.5,-π*0.5))))) for i=1:n-1])) # ZZpairs
-    push!(cirq, chain(n, prod([put(n, i=>Rz(rand(Uniform(-π,π)))) for i=1:n]))) # RzStr
+    #push!(cirq, prod([chain(n, put(n, i=>Rz(rand(Uniform(-π*1.5,-π*0.5))))*put(n, i+1=>Rz(rand(Uniform(-π*1.5,-π*0.5))))) for i=1:n-1])) # ZZpairs
+    push!(cirq, prod([chain(n, put(n, i=>Z)*put(n, i+1=>Z)) for i=1:n-1])) # ZZpairs
+    push!(cirq, chain(n, prod([put(n, i=>Rz(rand(Uniform(-π,π)))) for i=1:n]))) # RzStr with disorder
 
-    list = []
-    push!(list, genlist(chain(n, prod([put(n, i=>Rx(π*0.97)) for i=1:n]))))
-    push!(list, genlist(prod([chain(n, put(n, i=>Rz(rand(Uniform(-π*1.5,-π*0.5))))*put(n, i+1=>Rz(rand(Uniform(-π*1.5,-π*0.5))))) for i=1:n-1])))
+    list = Vector[]
+    push!(list, genlist(chain(n, prod([put(n, i=>Rx(π*1.)) for i=1:n]))))
+    push!(list, genlist(prod([chain(n, put(n, i=>Z)*put(n, i+1=>Z)) for i=1:n-1])))
     push!(list, genlist(chain(n, prod([put(n, i=>Rz(rand(Uniform(-π,π)))) for i=1:n]))))
 
     return list
 end
 
+yao_dtc_to_list(4)
 
-gates = [("X" , 1),                        # Pauli X on qubit 1
-         ("CX", (1, 3)),                   # Controlled-X on qubits [1,3]
-         ("Rx", 2, (θ=0.5,)),              # Rotation of θ around X
-         ("Rn", 3, (θ=0.5, ϕ=0.2, λ=1.2)), # Arbitrary rotation with angles (θ,ϕ,λ)
-         ("√SWAP", (3, 4)),                # Sqrt Swap on qubits [2,3]
-         ("T" , 4)]
+function measure_pauli(ψ::MPS, site::Int, pauli::String)
+  ψ = orthogonalize!(copy(ψ), site)
+  ϕ = ψ[site]
+  obs_op = gate(pauli, firstsiteind(ψ, site))
+  T = noprime(ϕ * obs_op)
+  return real((dag(T) * ϕ)[])
+end
 
-cirq = yao_dtc_to_list(4)
-cirq = test_circuit = [gatelayer("Rx", 4; (θ=π*0.97))]
-obs = Observer([
-  "χs" => linkdims,      # bond dimension at each bond
-  "χmax" => maxlinkdim,  # maximum bond dimension
-  "σᶻ" => σz,            # pauli Z on all sites
-  ])
-
-
-runcircuit(gates; (observer!)=obs)
+σx2(ψ::MPS) = measure_pauli(ψ, 2, "X")
+σz11(ψ::MPS) = measure_pauli(ψ, 11, "Z")
+σz(ψ::MPS) = [measure_pauli(ψ, j, "Z") for j in 1:length(ψ)]
 
 function Mz_evolve(N, nsteps)
     t_vec = Vector{Float64}();
@@ -92,4 +88,4 @@ function Mz_evolve(N, nsteps)
 end
 
 t_vec, Mz_vec, Mz_11_vec = Mz_evolve(20, 250);
-plot(t_vec[1:250], Mz_vec[1:250], linetype=:steppre, xaxis="Time T", yaxis="Magnetisation Mz",  legend=false)
+plot(t_vec[1:50], Mz_vec[1:50], linetype=:steppre, xaxis="Time T", yaxis="Magnetisation Mz",  legend=false)
