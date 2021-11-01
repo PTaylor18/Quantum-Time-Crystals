@@ -25,7 +25,8 @@ function ITensors.space(
   return 2
 end
 
-N = 100
+N = 30
+# N = 100
 S = Index(N, "Site,S=1/2")
 
 # Arbitrary values are assigned to Up and Down state, and the Hilbert Space
