@@ -68,10 +68,10 @@ function Mz_evolve(N, nsteps)
     # first layer
     for j=1:N
         append!(t_vec, j)
-        push!(circuit, gatelayer("H", j))
+        push!(circuit, gatelayer("H", 1))
     end
     layer = [[("CNOT", (i, i+1)) for i=1:N-1],
-            [("CNOT", (j, j+1)) for j=N-1:-1:1]]
+            [("CNOT", (j, k+1)) for k=N-1:-1:1]]
     for i=N:nsteps
         append!(t_vec, i)
         push!(circuit, layer)

@@ -21,7 +21,6 @@ data, ψ = getsamples(circuit, nshots; local_basis=["X","Y","Z"])
 @show maxlinkdim(ψ)
 display(data)
 println()
-data[2,2]
 
 # Note: the above is equivalent to:
 #> bases = randombases(N,nshots)
