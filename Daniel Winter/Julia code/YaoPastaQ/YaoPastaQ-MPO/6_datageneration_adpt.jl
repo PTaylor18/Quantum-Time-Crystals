@@ -5,8 +5,8 @@ using HDF5
 
 Random.seed!(1234)
 
-N = 4
-depth = 4
+N = 10
+depth = 3
 nshots = 5
 circuit = randomcircuit(N, depth)
 
@@ -17,7 +17,13 @@ circuit = randomcircuit(N, depth)
 # a) Unitary circuit
 # Returns output state as MPS
 println("Generate samples from random projective measurements of the state U|0,0,…>:")
-data, ψ = getsamples(circuit, nshots; local_basis=["X","Y","Z"])
+#data, ψ = getsamples(circuit, nshots; local_basis=["X","Y","Z"])
+data, ψ = getsamples(circuit, nshots; local_basis=["Z"])
+
+replace!(data,""Z" => 0" => -1)
+replace!(data[1,1],"Z" => 1)
+data[1,1]
+
 @show maxlinkdim(ψ)
 display(data)
 println()
