@@ -28,7 +28,10 @@ function Mz_mixed(N::Int, rho::MPO)
     return Mz
 end
 
-Z_layer(N) = [gatelayer("Z",j) for j in 1:N]
+function Z_layer(N::Int)
+    circuit = [gatelayer("Z",j) for j in 1:N]
+    return circuit
+end
 
 # Arrange ZZ(:rand) couplings using CNOT-Rz-CNOT sequence
 function ZZ_layer(N::Int)
@@ -42,10 +45,13 @@ function ZZ_layer(N::Int)
     return circuit
 end
 
-Rz_layer(N) = [gatelayer("Rz",j,rand(Uniform(-π, π))) for j=1:N]
+function Rz_layer(N::Int)
+    circuit = [gatelayer("Rz",j,rand(Uniform(-π, π))) for j=1:N]
+    return circuit
+end
 
 # evolve initial state in time using the stroboscopic DTC sequence
-function Mz_evolve(N::Int, nsteps::Int, γZ::Float64, γZZ::Float64, γxr::Float64)
+function Mz_evolve(N::Int, nsteps::Int, γZ::Float64, γZZ::Float64, γRz::Float64)
     # Initialize the MPS state ψ = |0,0,..,0⟩
     #ψ = productstate(N);
     # Write magnetization from each step (starting with 0)
@@ -55,7 +61,7 @@ function Mz_evolve(N::Int, nsteps::Int, γZ::Float64, γZZ::Float64, γxr::Float
     #ρ = productstate(N);
     ψ0 = randomstate(N)
     #ψ1 = runcircuit(ψ0, flip(N))
-    if (γZ > 1E-8) && (γZZ > 1E-8) && (γxr > 1E-8)
+    if (γZ > 1E-8) && (γZZ > 1E-8) && (γRz > 1E-8)
         # Initialize the MPS state ρ = |0,0,..,0><0,0,..0|
         sites = siteinds("Qubit", N);
         #ρ = LPDO(productstate(N));
@@ -65,17 +71,20 @@ function Mz_evolve(N::Int, nsteps::Int, γZ::Float64, γZZ::Float64, γxr::Float
         #resetqubits!(ψ0)
         resetqubits!(ρ)
         resetqubits!(ρ0)
-        ρ1 = runcircuit(ρ0, z_layer)
+        ρ1 = runcircuit(ρ0, Z_layer)
         #fidelity
         #ρ = productoperator(N);
         for n in 1:nsteps
-            ρ = runcircuit(ρ, RXstr(N); noise = ("amplitude_damping", (γ = γZ,))) # , apply_dag=true
+            ρ = runcircuit(ρ, Z_layer(N); noise = ("amplitude_damping", (γ = γZ,))) # , apply_dag=true
             #results = measure(ρ, "Z"); println(results)
             normalize!(ρ) # normalize the density operator
+
             ρ = runcircuit(ρ, ZZ_layer(N); noise = ("amplitude_damping", (γ = γZZ,))) # , apply_dag=true
             normalize!(ρ) # normalize the density operator
-            ρ = runcircuit(ρ, RZstr(N); noise = ("amplitude_damping", (γ = γxr,))) # , apply_dag=true
+
+            ρ = runcircuit(ρ, Rz_layer(N); noise = ("amplitude_damping", (γ = γRz,))) # , apply_dag=true
             normalize!(ρ) # normalize the density operator
+
             #println(PastaQ.array(ρ))
             #measurement = Mz_mixed(N, ρ)
             isodd(n) ? (measurement = -1. * fidelity(ρ, ρ1)) : (measurement = 1. * fidelity(ρ, ρ0))
@@ -85,9 +94,9 @@ function Mz_evolve(N::Int, nsteps::Int, γZ::Float64, γZZ::Float64, γxr::Float
     else
         ψ = randomstate(N); # Initialize the MPS state ψ = |0,0,..,0⟩
         for n in 1:nsteps
-            ψ = runcircuit(ψ, z_layer(N))
+            ψ = runcircuit(ψ, Z_layer(N))
             ψ = runcircuit(ψ, ZZ_layer(N))
-            ψ = runcircuit(ψ, xr_layer(N))
+            ψ = runcircuit(ψ, Rz_layer(N))
             append!(Mz_list, Mz_pure(N, ψ))
         end
     end
@@ -95,21 +104,12 @@ function Mz_evolve(N::Int, nsteps::Int, γZ::Float64, γZZ::Float64, γxr::Float
     return Mz_list
 end
 
-h = -pi
-Φ = -0.5*pi
-g = 1
-β = 1.0   # Inverse temperature
-τ = 0.005 # Trotter step
-
-# Depth of the circuit
-depth = β ÷ τ
-
 N = 10 # number of qubits
 nsteps = 50 # number of Trotter steps
 γZ = 0.01 # single-qubit error rate
 γZZ = 0.0001 # two-qubit error rate
-γxr = 0.002 # rotation error rate
-Mz_DTC = Mz_evolve(N, nsteps, γZ, γZZ, γxr)
+γRz = 0.002 # rotation error rate
+Mz_DTC = Mz_evolve(N, nsteps, γZ, γZZ, γRz)
 plt = plot(collect(0:nsteps), Mz_DTC, linetype=:steppre, xaxis=("discrete time"), yaxis=("Mz(t)"), label="N=$N", legend=true)
 
 println("Finished")
