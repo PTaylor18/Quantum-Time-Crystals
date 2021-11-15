@@ -55,28 +55,67 @@ function noise_evolve2(N, nsteps)
     coupling_sequence = coupling_seq(N);
     circuit = Vector[];
 
-    layer = [gatelayer("Rx", 4; (θ=π*0.97)),
-            [("ZZ_couple", coupling_sequence_test[i], (ϕ=rand(Uniform(-π*1.5,-π*0.5)),)) for i=1:length(coupling_sequence_test)],
-            [("Rz", i, (ϕ=rand(Uniform(-π,π)),)) for i=1:4]]
+    layer = [gatelayer("Rx", 4; (θ=π*0.92)),
+            [("ZZ_couple", coupling_sequence[i], (ϕ=rand(Uniform(-π*1.5,-π*0.5)),)) for i=1:length(coupling_sequence)],
+            [("Rz", i, (ϕ=rand(Uniform(-π,π)),)) for i=1:N]]
 
-    nshots = 10
+    nshots = 100
 
     for i=1:nsteps
         append!(t_vec, i)
         push!(circuit, layer)
 
-        data = getsamples(circuit, nshots; local_basis=["Z"], noise = ("amplitude_damping", (γ = 0.00001,)))[1]
+        #data, ρ = getsamples(circuit, nshots; local_basis=["Z"], noise = ("dephasing", (γ = 0.1,)))
+        data, ρ = getsamples(circuit, nshots; local_basis=["Z"])
 
         res = Vector{Float64}();
 
         for x in data
-            append!(res, x.second)
+            append!(res, 2 * (x.second - 0.5))
         end
 
         append!(Mz_vec, mean(res))
+        println("Step: $i")
     end
     return t_vec, Mz_vec
 end
 
-t_vec, Mz_vec = noise_evolve2(10,250);
-plot(t_vec[1:250], Mz_vec[1:250], linetype=:steppre, xaxis="Time T", yaxis="Magnetisation Mz",  legend=false)
+nsteps = 50
+
+t_vec, Mz_vec = noise_evolve2(4, nsteps);
+plot(t_vec[1:nsteps], Mz_vec[1:nsteps], linetype=:steppre, xaxis="Time T", yaxis="Magnetisation Mz",  legend=false)
+
+
+begin
+    coupling_sequence = coupling_seq(N);
+
+    layer = [gatelayer("Rx", 4; (θ=π*0.97)),
+            [("ZZ_couple", coupling_sequence[i], (ϕ=rand(Uniform(-π*1.5,-π*0.5)),)) for i=1:length(coupling_sequence)],
+            [("Rz", i, (ϕ=rand(Uniform(-π,π)),)) for i=1:N]]
+
+end
+
+function getshots(circ, nshots, j)
+    data, ψ = getsamples(circ, nshots; local_basis=["Z"], noise = ("amplitude_damping", (γ = 0.001,)))
+    results = data[:, j]
+    measurement_list = [];
+    for n=1:nshots
+        measured_bit = parse(Float64, replace("Z", results[n]))
+        measured_spin = 2 * (measured_bit - 0.5)
+        append!(measurement_list, measured_spin)
+    end
+    return measurement_list
+end
+
+
+nshots = 10
+nsteps = 20
+circuit = Vector[];
+
+for i=1:nsteps
+    push!(circuit, layer)
+    measured_shots = getshots(circuit, nshots, 1)
+    println(mean(measured_shots))
+end
+
+measured_shots
