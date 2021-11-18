@@ -20,87 +20,71 @@ end
 
 Z_field(N::Int) = [("Rz", i, (ϕ=rand(Uniform(-π,π)),)) for i=1:N]
 
-initial_bitstring = randomstate(4)
-
-function Mz_evolve_sg(N, nsteps)
+function sg_evolve(N, nsteps)
     t_vec = Vector{Float64}();
-    av_χ_sg = Vector{Float64}();
+    χ_sg_final = Vector{Float64}(); # final average spin glass for each g
     g_vec = collect(0.7:0.02:1.0)
+
+    println("Evolution running")
 
     for g=0.7:0.02:1.0 # varying g
 
         println("Running with g = $g")
-        X_flip(N::Int) = gatelayer("Rx", 4; (θ=π*g))
 
-        χ_sg_vec = Vector{Float64}();
+        X_flip(N::Int) = gatelayer("Rx", 4; (θ=π*g)) # varied g for X_flip
 
-        #ψ = initial_bitstring
-        ψ = productstate(N)
-        for i=1:nsteps
+        av_χ_sg = Vector{Float64}(); # average spin glass values for each run
 
-            append!(t_vec, i)
+        for r=1:10 # number of runs to average on
+            println("   Run $r")
 
-            ψ = runcircuit(ψ, X_flip(N))
-            normalize!(ψ)
-            ψ = runcircuit(ψ, ZZ_layer(N))
-            normalize!(ψ)
-            ψ = runcircuit(ψ, Z_field(N))
-            normalize!(ψ)
+            χ_sg_vec = Vector{Float64}();
 
-            zzcorr = correlation_matrix(ψ, "Z", "Z"; site_range=2:N-1) # correlation function excludes edge qubits
+            #ψ = initial_bitstring
+            ψ = productstate(N)
 
-            χ_sg = 0
+            for i=1:nsteps
 
-            for i=1:size(zzcorr)[1], j=1:size(zzcorr)[2]
-                if i == j
-                    χ_sg += 0
-                else
-                    χ_sg += 1/(N-2)*(zzcorr[i,j])^2
+                append!(t_vec, i)
+
+                # applies TC unitary
+                ψ = runcircuit(ψ, X_flip(N))
+                normalize!(ψ)
+                ψ = runcircuit(ψ, ZZ_layer(N))
+                normalize!(ψ)
+                ψ = runcircuit(ψ, Z_field(N))
+                normalize!(ψ)
+
+                zzcorr = correlation_matrix(ψ, "Z", "Z"; site_range=2:N-1) # correlation function excludes edge qubits
+
+                χ_sg = 0
+
+                # calculates χˢᵍ order parameter as in google paper
+                for i=1:size(zzcorr)[1], j=1:size(zzcorr)[2]
+                    if i == j
+                        χ_sg += 0
+                    else
+                        χ_sg += 1/(N-2)*(zzcorr[i,j])^2
+                    end
                 end
+
+                append!(χ_sg_vec, abs(χ_sg))
             end
-            append!(χ_sg_vec, abs(χ_sg))
+
+            χ_sg_mean = mean(χ_sg_vec[50:60]) # average between t=50 and 5=60
+            println(χ_sg_mean)
+            append!(av_χ_sg, χ_sg_mean)
         end
-        χ_sg_mean = mean(χ_sg_vec[50:60])
-        append!(av_χ_sg, χ_sg_mean)
+        run_mean = mean(av_χ_sg)
+        append!(χ_sg_final, run_mean) # takes average of all 10 runs for each g
     end
-    return g_vec, av_χ_sg
+    return g_vec, χ_sg_final
 end
 
-nsteps = 60
+N = 20 # no. of qubits
+nsteps = 60 # no. of evolutions
 
-g_vec, av_χ_sg = Mz_evolve_sg(4, nsteps);
-plot(g_vec, av_χ_sg, xaxis="g", yaxis="Spin Glass Order Parameter, χˢᵍ", legend=false)
+initial_bitstring = randomstate(N) # generate random state
 
-
-plot(t_vec[1:nsteps], χ_sg_vec[1:nsteps], xaxis="Time T", yaxis="Spin Glass Order Parameter, χˢᵍ", legend=false)
-
-
-χ_sg_mean = mean(χ_sg_vec[50:60])
-append!(av_χ_sg, χ_sg_mean)
-
-g_vec = collect(0.7:0.02:1.0)
-g_vec = collect(0.7:0.1:1.0)
-
-
-
-χᴳ = 0
-
-for i=1:size(zzcorr)[1], j=1:size(zzcorr)[2]
-    if i == j
-        χᴳ += 0
-    else
-        χᴳ += zzcorr[i,j]
-    end
-end
-
-χᴳ
-
-size(zzcorr)[1]
-
-
-
-zzcorr[1,2]
-zzcorr[1,3]
-zzcorr[1,4]
-zzcorr[2,4]
-zzcorr[1,1]
+g_vec, χ_sg_final = sg_evolve(N, nsteps);
+plot(g_vec, χ_sg_final, xaxis="g", yaxis="Spin Glass Order Parameter, χˢᵍ", label="N=$N", legend=true)
