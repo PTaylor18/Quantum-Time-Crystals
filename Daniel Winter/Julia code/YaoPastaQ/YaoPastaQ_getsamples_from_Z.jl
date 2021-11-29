@@ -24,6 +24,8 @@ println("Generate samples from random projective measurements of the state U|0,0
 data, ψ = getsamples(circuit, nshots; local_basis=["Z"])
 resetqubits!(ψ)
 
+flip(N::Int) = gatelayer("X", N)
+
 function getshots(circ, nshots, j)
     data, ψ = getsamples(circ, nshots; local_basis=["Z"])
     measurement_list = [];
@@ -31,12 +33,10 @@ function getshots(circ, nshots, j)
     Mz_vec = Vector{Float64}();
     results = Vector{Float64}();
     circuit = Vector[]
-    qarray = PastaQ.lineararray(N)
 
     for i=1:nshots
         results = data[i, :]
-        #push!(circuit, [("X", i)])
-        #push!(circuit, [("CX", qarray[1])])
+        circuit = [flip(j),flip(j)]
         for n=1:j
             measured_bit = parse(Float64, replace("Z", results[n]))
             measured_spin = 2 * (measured_bit - 0.5)
