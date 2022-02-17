@@ -52,7 +52,7 @@ function Mz_evolve(N::Int, nsteps::Int, γX::Float64, γZZ::Float64)
     #ρ = dot(productstate(N), productstate(N)'); # this variable stores MPO if there is some noise
     #ρ = copy(ψ);
     #ρ = productstate(N);
-    ψ0 = productstate(N)
+    ψ0 = randomstate(N)
     #ψ1 = runcircuit(ψ0, flip(N))
     if (γX > 1E-8) && (γZZ > 1E-8)
         # Initialize the MPS state ρ = |0,0,..,0><0,0,..0|
@@ -80,7 +80,7 @@ function Mz_evolve(N::Int, nsteps::Int, γX::Float64, γZZ::Float64)
             append!(Mz_list, measurement)
         end
     else
-        ψ = productstate(N); # Initialize the MPS state ψ = |0,0,..,0⟩
+        ψ = randomstate(N); # Initialize the MPS state ψ = |0,0,..,0⟩
         for n in 1:nsteps
             ψ = runcircuit(ψ, flip(N))
             ψ = runcircuit(ψ, ZZ_layer(N))
