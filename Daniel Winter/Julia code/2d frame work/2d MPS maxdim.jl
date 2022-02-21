@@ -5,15 +5,12 @@ using Plots
 using Statistics
 using Distributions
 using CurveFit # used for curve fitting
-using FFTW # Used for Fourier Transform
 
 theme(:dao)
 
 one_d = true # Is the system 1d
-qmin = 4 # minimum number of Qubits
-qmax = 10 # maximum number of Qubits
-mdim = 10 # maximum bond dimension
-cuttoff = 1E-8
+qmin = 4
+qmax = 20
 
 nq = Vector{Float64}() # number of qubits
 t1 = Vector{Float64}() # time for 1d
@@ -95,7 +92,8 @@ end
 
 function Mz_evolve(N, nsteps)
     t_vec = Vector{Float64}();
-    Mz_vec = Vector{Float64}();
+    link_vec = Vector{Float64}();
+    maxlink_vec = Vector{Float64}();
     coupling_sequence = coupling_seq(N);
 
     circuit = Vector[];
@@ -115,19 +113,22 @@ function Mz_evolve(N, nsteps)
       "χmax" => maxlinkdim,  # maximum bond dimension
       "σᶻ" => σz,
     ])
-    ψ = runcircuit(circuit; (observer!)=obs, noise = ("amplitude_damping", (γ = 0.1,)), cutoff = cuttoff, maxdim = mdim)
-    Mz_res = results(obs, "σᶻ")
+    ψ = runcircuit(circuit; (observer!)=obs)
     link_res = results(obs, "χs")
     maxlink_res = results(obs, "χmax")
-    for i=1:length(Mz_res)
-        append!(Mz_vec, mean(Mz_res[i]))
+    for i=1:length(link_res)
+        append!(link_vec, mean(link_res[i]))
     end
-    return t_vec, Mz_vec
+    for i=1:length(maxlink_res)
+        append!(maxlink_vec, mean(maxlink_res[i]))
+    end
+    return t_vec, link_vec, maxlink_vec
 end
 
 function Mz_evolve2d(N, nsteps)
     t_vec = Vector{Float64}();
-    Mz_vec = Vector{Float64}();
+    link_vec = Vector{Float64}();
+    maxlink_vec = Vector{Float64}();
     coupling_sequence = coupling_seq(N);
 
     circuit = Vector[];
@@ -152,12 +153,16 @@ function Mz_evolve2d(N, nsteps)
       "χmax" => maxlinkdim,  # maximum bond dimension
       "σᶻ" => σz,
     ])
-    ψ = runcircuit(circuit; (observer!)=obs, noise = ("amplitude_damping", (γ = 0.1,)), cutoff = cuttoff, maxdim = mdim)
-    Mz_res = results(obs, "σᶻ")
-    for i=1:length(Mz_res)
-        append!(Mz_vec, mean(Mz_res[i]))
+    ψ = runcircuit(circuit; (observer!)=obs)
+    link_res = results(obs, "χs")
+    maxlink_res = results(obs, "χmax")
+    for i=1:length(link_res)
+        append!(link_vec, mean(link_res[i]))
     end
-    return t_vec, Mz_vec
+    for i=1:length(maxlink_res)
+        append!(maxlink_vec, mean(maxlink_res[i]))
+    end
+    return t_vec, link_vec, maxlink_vec
 end
 
 macro Name(arg)
@@ -205,27 +210,15 @@ for runs = 1
             figpath1 = "C:/Users/Daniel/OneDrive/Documents/Exeter Uni/Modules/Year 3/Project-Time crystals/Julia Code/Graphs/" *plot_name* " " *string(q)* " qubits/" * string(step) * " steps/"
             # 1 after variable names denote they're local variables in the for loop
             # And here is where the file path is defined for each iteration.
-            title1 = "" *string(plot_name)* " plot for "* string(q) * " Qubits"
-            t_vec1, Mz_vec1 = Mz_evolve(q, step)
-            append!(nq,q)
-            append!(t1,@elapsed Mz_evolve(q, step))
-            plt=Plots.plot(t_vec1, Mz_vec1, linetype=:steppre, xlabel = "Time/ period of driving field", xlims = (0, step), ylabel = " \n"*"Magnetisation / fraction of maximum value\n and orientation", legend = false)
+            title1 = "" *string(plot_name)* " maximum bond dimension plot for "* string(q) * " Qubits"
+            t_vec1, link_vec1, maxlink_vec1 = Mz_evolve(q, step)
+            plt=Plots.plot(t_vec1, maxlink_vec1, linetype=:steppre, xlabel = "Time/ period of driving field", xlims = (0, step), ylabel = " \n"*"Maximum bond dimension", legend = false)
             Plots.title!(title1)
             #Plots.savefig(figpath1*title1*".png") #Saves the plots onto my computer but requires me to make a folder
 
             label=title1;
             display(plt)
             save_plot(plot_name, q, step, plt, label) # Saves the plots to github
-
-            tit1 = "Fourier transfrom of "*string(plot_name)*" plot for "* string(q) * " Qubits"
-            Mz_vec_fft1 = fft(Mz_vec1)
-            fourier=Plots.plot(abs.(Mz_vec_fft1), linetype=:steppre, xlabel="Frequecy", xlims = (0, step), ylabel="Intensity", legend = false)
-            Plots.title!(tit1)
-            display(fourier)
-            lab="Fourier transfrom of "*string(plot_name)*" plot for "* string(q) * " Qubits";
-
-            save_plot(plot_name, q, step, fourier, lab) # Saves the plots to github
-
             println("Successfully finished "*string(step)*" steps\n")
         end
 
@@ -240,43 +233,19 @@ for runs = 1
             figpath1 = "C:/Users/Daniel/OneDrive/Documents/Exeter Uni/Modules/Year 3/Project-Time crystals/Julia Code/Graphs/" *plot_name* " " *string(q)* " qubits/" * string(step) * " steps/"
             # 1 after variable names denote they're local variables in the for loop
             # And here is where the file path is defined for each iteration.
-            title1 = "" *string(plot_name)* " plot for "* string(q) * " Qubits"
-            t_vec1, Mz_vec1 = Mz_evolve2d(q, step)
-            append!(t2,@elapsed Mz_evolve2d(q, step))
-            plt=Plots.plot(t_vec1, Mz_vec1, linetype=:steppre, xlabel = "Time/ period of driving field", xlims = (0, step), ylabel = " \n"*"Magnetisation / fraction of maximum value\n and orientation", legend = false)
+            title1 = "" *string(plot_name)* " maximum bond dimension plot for "* string(q) * " Qubits"
+            t_vec1, maxlink_vec1 = Mz_evolve2d(q, step)
+            plt=Plots.plot(t_vec1, maxlink_vec1, linetype=:steppre, xlabel = "Time/ period of driving field", xlims = (0, step), ylabel = " \n"*"Maximum bond dimension", legend = false)
             Plots.title!(title1)
             #Plots.savefig(figpath1*title1*".png") #Saves the plots onto my computer but requires me to make a folder
 
             label=title1;
             save_plot(plot_name, q, step, plt, label) # Saves the plots to github
             display(plt)
-
-            tit1 = "Fourier transfrom of "*string(plot_name)*" plot for "* string(q) * " Qubits"
-            Mz_vec_fft1 = fft(Mz_vec1)
-            fourier=Plots.plot(abs.(Mz_vec_fft1), linetype=:steppre, xlabel="Frequecy", xlims = (0, step), ylabel="Intensity", legend = false)
-            Plots.title!(tit1)
-            display(fourier)
-            lab="Fourier transfrom of "*string(plot_name)*" plot for "* string(q) * " Qubits";
-
-            save_plot(plot_name, q, step, fourier, lab) # Saves the plots to github
-
             println("Successfully finished "*string(step)*" steps\n")
         end
 
         println("Successfully finished "*string(q)*" qubits\n")
 
     end
-    title_c = "Time for computation"
-    pltt=Plots.scatter(nq,t1,color="cyan4", xlabel = "Number of Qubits", ylabel = " \n"*"Time / seconds", legend = false)
-    pltt=Plots.scatter!(nq,t2,color="orangered3")
-    fit1 = curve_fit(ExpFit, nq, t1)
-    fit2 = curve_fit(ExpFit, nq, t2)
-    x=qmin:0.01:qmax
-    pltt=Plots.plot!(x, fit1.(x),color="cyan4")
-    pltt=Plots.plot!(x, fit2.(x),color="orangered3")
-    Plots.title!(title_c)
-    save_comp_plot(pltt, title_c)
-    display(pltt)
-
-    println("Run: "*string(runs)*" \n")
 end
